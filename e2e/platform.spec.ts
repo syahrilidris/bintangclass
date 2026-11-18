@@ -40,8 +40,9 @@ test('platform admin sees every centre’s numbers, and manages plan and CRM', a
   await expect(page).toHaveURL(/\/admin$/)
   await ready(page)
   await expect(page.getByRole('heading', { name: 'All centres' })).toBeVisible()
+  const headline = page.getByRole('region', { name: 'Headline numbers' })
   for (const k of ['Centres', 'Active students', 'Monthly revenue', 'Teacher reply rate']) {
-    await expect(page.getByText(k, { exact: true })).toBeVisible()
+    await expect(headline.getByText(k, { exact: true })).toBeVisible()
   }
   await expect(page.getByRole('img', { name: /Attendance marked, last 30 days/ })).toBeVisible()
   const centre = page.getByRole('link', { name: 'Kelas Mengaji Nurul Iman' }).first()
