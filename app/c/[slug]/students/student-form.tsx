@@ -4,6 +4,7 @@ import { useActionState, useRef, useEffect, useState } from 'react'
 import { saveStudent } from '../actions'
 import { Submit } from '@/components/submit'
 import { useHydrated } from '@/components/hydrated'
+import { keepFormSubmit } from '@/components/use-keep-form'
 import { FormMessage } from '@/components/form-message'
 import { BOOKS } from '@/lib/books'
 
@@ -21,7 +22,7 @@ export function StudentForm({
   defaultClass?: string
 }) {
   const hydrated = useHydrated()
-  const [state, action] = useActionState(saveStudent, undefined)
+  const [state, action, busy] = useActionState(saveStudent, undefined)
   const formRef = useRef<HTMLFormElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   // Selects are controlled so the choice on screen is always the one submitted.
@@ -38,7 +39,7 @@ export function StudentForm({
   }, [state, initial])
 
   return (
-    <form ref={formRef} action={action} className="grid gap-4">
+    <form ref={formRef} {...(initial ? { onSubmit: keepFormSubmit(action) } : { action })} className="grid gap-4">
       <input type="hidden" name="slug" value={slug} />
       {initial ? <input type="hidden" name="id" value={initial.id} /> : null}
       <label className="field">
@@ -81,7 +82,7 @@ export function StudentForm({
       ) : null}
       <FormMessage state={state} />
       {initial ? (
-        <Submit pending="Saving…" disabled={!hydrated}>Save details</Submit>
+        <Submit pending="Saving…" disabled={!hydrated} busy={busy}>Save details</Submit>
       ) : (
         <div className="grid gap-2">
           <Submit pending="Adding…" disabled={!hydrated}>Add student</Submit>

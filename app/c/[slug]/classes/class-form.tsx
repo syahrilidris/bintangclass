@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import { saveClass } from '../actions'
 import { Submit } from '@/components/submit'
 import { useHydrated } from '@/components/hydrated'
+import { keepFormSubmit } from '@/components/use-keep-form'
 import { FormMessage } from '@/components/form-message'
 
 export function ClassForm({
@@ -16,11 +17,11 @@ export function ClassForm({
   initial?: { id: string; name: string; schedule: string | null; teacher_id: string | null }
 }) {
   const hydrated = useHydrated()
-  const [state, action] = useActionState(saveClass, undefined)
+  const [state, action, busy] = useActionState(saveClass, undefined)
   // Controlled so the choice on screen is always the one submitted.
   const [teacherId, setTeacherId] = useState(initial?.teacher_id ?? '')
   return (
-    <form action={action} className="grid gap-4">
+    <form {...(initial ? { onSubmit: keepFormSubmit(action) } : { action })} className="grid gap-4">
       <input type="hidden" name="slug" value={slug} />
       {initial ? <input type="hidden" name="id" value={initial.id} /> : null}
       <label className="field">
@@ -42,7 +43,7 @@ export function ClassForm({
         {teachers.length === 0 ? <small>Invite teachers from People, then assign them here.</small> : null}
       </label>
       <FormMessage state={state} />
-      <Submit pending="Saving…" disabled={!hydrated}>{initial ? 'Save class' : 'Add class'}</Submit>
+      <Submit pending="Saving…" disabled={!hydrated} busy={busy}>{initial ? 'Save class' : 'Add class'}</Submit>
     </form>
   )
 }

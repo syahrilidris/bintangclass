@@ -5,6 +5,7 @@ import { addLead, addNote, saveAccount, setCentrePlan } from './actions'
 import { Submit } from '@/components/submit'
 import { FormMessage } from '@/components/form-message'
 import { useHydrated } from '@/components/hydrated'
+import { keepFormSubmit } from '@/components/use-keep-form'
 import { STAGES, STAGE_LABEL } from '@/lib/stages'
 
 type Account = {
@@ -21,10 +22,10 @@ type Account = {
 
 export function AccountForm({ a }: { a: Account }) {
   const hydrated = useHydrated()
-  const [state, action] = useActionState(saveAccount, undefined)
+  const [state, action, busy] = useActionState(saveAccount, undefined)
   const [stage, setStage] = useState(a.stage)
   return (
-    <form action={action} className="grid gap-4">
+    <form onSubmit={keepFormSubmit(action)} className="grid gap-4">
       <input type="hidden" name="id" value={a.id} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="field">
@@ -63,7 +64,7 @@ export function AccountForm({ a }: { a: Account }) {
         </label>
       </div>
       <FormMessage state={state} />
-      <div><Submit pending="Saving…" disabled={!hydrated}>Save contact</Submit></div>
+      <div><Submit pending="Saving…" disabled={!hydrated} busy={busy}>Save contact</Submit></div>
     </form>
   )
 }
@@ -93,11 +94,11 @@ export function NoteForm({ accountId }: { accountId: string }) {
 
 export function PlanForm({ centreId, plan, status }: { centreId: string; plan: string; status: string }) {
   const hydrated = useHydrated()
-  const [state, action] = useActionState(setCentrePlan, undefined)
+  const [state, action, busy] = useActionState(setCentrePlan, undefined)
   const [p, setP] = useState(plan)
   const [s, setS] = useState(status)
   return (
-    <form action={action} className="grid gap-4">
+    <form onSubmit={keepFormSubmit(action)} className="grid gap-4">
       <input type="hidden" name="centre_id" value={centreId} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="field">
@@ -117,7 +118,7 @@ export function PlanForm({ centreId, plan, status }: { centreId: string; plan: s
         </label>
       </div>
       <FormMessage state={state} />
-      <div><Submit pending="Saving…" disabled={!hydrated}>Save plan</Submit></div>
+      <div><Submit pending="Saving…" disabled={!hydrated} busy={busy}>Save plan</Submit></div>
     </form>
   )
 }
