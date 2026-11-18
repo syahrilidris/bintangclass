@@ -71,11 +71,20 @@ export default async function PeoplePage({ params }: { params: Promise<{ slug: s
                             <button className="text-sm font-semibold text-teal-700 hover:underline">Make teacher</button>
                           </form>
                         ) : null}
-                        <form action={removeMember}>
-                          <input type="hidden" name="slug" value={slug} />
-                          <input type="hidden" name="user_id" value={p.user_id} />
-                          <button className="text-sm font-semibold text-danger hover:underline">Remove</button>
-                        </form>
+                        <details className="relative">
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-danger hover:underline">Remove</summary>
+                          <div className="absolute right-0 top-7 z-10 w-64 rounded-xl border border-line bg-white p-4 shadow-lg">
+                            <p className="text-sm">
+                              {p.name} will lose access to {centre.name}
+                              {r === 'parent' ? ' and their child’s records' : ''}. You can invite them again later.
+                            </p>
+                            <form action={removeMember} className="mt-3">
+                              <input type="hidden" name="slug" value={slug} />
+                              <input type="hidden" name="user_id" value={p.user_id} />
+                              <button className="btn btn-danger w-full">Remove {p.name.split(' ')[0]}</button>
+                            </form>
+                          </div>
+                        </details>
                       </span>
                     ) : null}
                   </li>

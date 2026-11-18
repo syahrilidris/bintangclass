@@ -137,7 +137,7 @@ async function StaffHome({ slug }: { slug: string }) {
                   </p>
                   {p.note ? <p className="text-sm text-muted">“{p.note}”</p> : null}
                 </div>
-                <span className="shrink-0 text-xs text-faint">{p.by_user ? people.get(p.by_user)?.name?.split(' ')[0] : ''}</span>
+                <span className="shrink-0 text-xs text-faint">{p.by_user ? greetingName(people.get(p.by_user)?.name) : ''}</span>
               </li>
             ))}
           </ul>
