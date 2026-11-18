@@ -6,6 +6,11 @@ and a platform admin with a light CRM.
 
 **Stack:** Supabase (Postgres, Auth, RLS) and Next.js 15 on Vercel (Singapore)
 
+## Deploys
+
+Vercel project `bintangclass` is connected to this repo: every push to `main` deploys production
+(https://bintangclass.vercel.app) and every other branch or pull request gets its own preview link.
+
 ## Run it
 
 ```sh
