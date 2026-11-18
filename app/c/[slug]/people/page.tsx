@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import { getCentre, ROLE_LABEL, type Role } from '@/lib/centre'
 import { loadPeople, initials } from '@/lib/people'
-import { InviteForm, ShareInvite, inviteMessage } from '@/components/invite-form'
+import { InviteForm, ShareInvite } from '@/components/invite-form'
+import { inviteMessage } from '@/lib/invite'
 import { getOrigin } from '@/lib/origin'
 import { changeRole, removeMember, revokeInvite } from '../actions'
 
