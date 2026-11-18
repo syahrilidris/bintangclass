@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useRef, useEffect } from 'react'
+import { useActionState, useRef, useEffect, useState } from 'react'
 import { saveStudent } from '../actions'
 import { Submit } from '@/components/submit'
 import { FormMessage } from '@/components/form-message'
@@ -22,6 +22,10 @@ export function StudentForm({
   const [state, action] = useActionState(saveStudent, undefined)
   const formRef = useRef<HTMLFormElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
+  // Selects are controlled so the choice on screen is always the one submitted.
+  const [classId, setClassId] = useState(initial?.class_id ?? defaultClass ?? '')
+  const [book, setBook] = useState('Iqra 1')
+  const [status, setStatus] = useState(initial?.status ?? 'active')
 
   // After "Add and add another", clear the name and keep the class, so a whole register goes in quickly.
   useEffect(() => {
@@ -41,7 +45,7 @@ export function StudentForm({
       </label>
       <label className="field">
         <span>Class</span>
-        <select className="input" name="class_id" defaultValue={initial?.class_id ?? defaultClass ?? ''}>
+        <select className="input" name="class_id" value={classId} onChange={(e) => setClassId(e.target.value)}>
           <option value="">No class yet</option>
           {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
@@ -50,7 +54,7 @@ export function StudentForm({
         <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
           <label className="field">
             <span>Reading now</span>
-            <select className="input" name="book" defaultValue="Iqra 1">
+            <select className="input" name="book" value={book} onChange={(e) => setBook(e.target.value)}>
               {BOOKS.map((b) => <option key={b.name}>{b.name}</option>)}
             </select>
           </label>
@@ -67,7 +71,7 @@ export function StudentForm({
       {initial ? (
         <label className="field">
           <span>Status</span>
-          <select className="input" name="status" defaultValue={initial.status}>
+          <select className="input" name="status" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="active">Active</option>
             <option value="left">Left the centre</option>
           </select>

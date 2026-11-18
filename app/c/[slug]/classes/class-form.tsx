@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { saveClass } from '../actions'
 import { Submit } from '@/components/submit'
 import { FormMessage } from '@/components/form-message'
@@ -15,6 +15,8 @@ export function ClassForm({
   initial?: { id: string; name: string; schedule: string | null; teacher_id: string | null }
 }) {
   const [state, action] = useActionState(saveClass, undefined)
+  // Controlled so the choice on screen is always the one submitted.
+  const [teacherId, setTeacherId] = useState(initial?.teacher_id ?? '')
   return (
     <form action={action} className="grid gap-4">
       <input type="hidden" name="slug" value={slug} />
@@ -29,7 +31,7 @@ export function ClassForm({
       </label>
       <label className="field">
         <span>Teacher</span>
-        <select className="input" name="teacher_id" defaultValue={initial?.teacher_id ?? ''}>
+        <select className="input" name="teacher_id" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
           <option value="">No teacher yet</option>
           {teachers.map((t) => (
             <option key={t.user_id} value={t.user_id}>{t.name}</option>

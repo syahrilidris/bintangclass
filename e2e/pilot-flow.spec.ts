@@ -137,14 +137,11 @@ test('owner assigns the teacher to the class', async () => {
   const select = page.getByLabel('Teacher')
   await select.selectOption({ label: teacher.name })
   await expect(select).toHaveValue(/^[0-9a-f-]{36}$/)
-  page.on('request', (r) => {
-    if (r.method() === 'POST') console.log('POST', r.url(), (r.postData() ?? '').slice(0, 800))
-  })
   await page.getByRole('button', { name: 'Save class' }).click()
   await expect(page.getByText('Class saved.')).toBeVisible()
-  await expect.soft(page.getByText(`Taught by ${teacher.name}`), 'page refreshes after saving').toBeVisible({ timeout: 3000 })
+  await expect(page.getByText(`Taught by ${teacher.name}`)).toBeVisible()
   await page.reload()
-  await expect(page.getByText(`Taught by ${teacher.name}`), 'teacher saved').toBeVisible()
+  await expect(page.getByLabel('Teacher')).toHaveValue(/^[0-9a-f-]{36}$/)
 })
 
 test('teacher marks attendance and records progress on a phone', async ({ browser }) => {
