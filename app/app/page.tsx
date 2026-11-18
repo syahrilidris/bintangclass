@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireUser, ROLE_LABEL, type Role } from '@/lib/centre'
 import { Logo, Star } from '@/components/star'
 import { InstallBanner } from '@/components/pwa'
+import { isPlatformAdmin } from '@/lib/platform'
 
 export const metadata = { title: 'Your centres' }
 
@@ -16,7 +17,10 @@ export default async function AppHome() {
     .order('created_at')
 
   const centres = (rows ?? []).filter((r) => r.centres)
-  if (centres.length === 1) redirect(`/c/${centres[0].centres!.slug}`)
+  const platform = await isPlatformAdmin()
+  // Platform admins land on the dashboard across all centres; everyone else goes to their centre.
+  if (platform && !centres.length) redirect('/admin')
+  if (!platform && centres.length === 1) redirect(`/c/${centres[0].centres!.slug}`)
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-8">
@@ -28,6 +32,16 @@ export default async function AppHome() {
       </header>
 
       <div className="mt-8"><InstallBanner /></div>
+
+      {platform ? (
+        <Link href="/admin" className="panel mt-2 flex items-center justify-between gap-4 bg-navy-900 px-5 py-4 text-white hover:bg-navy-800">
+          <span>
+            <span className="block font-semibold">Platform dashboard</span>
+            <span className="text-sm text-white/70">Every centre’s numbers, health and the CRM</span>
+          </span>
+          <span className="rounded-full bg-brass px-2.5 py-0.5 text-xs font-bold text-navy-950">Platform</span>
+        </Link>
+      ) : null}
 
       {centres.length === 0 ? (
         <section className="mt-16">

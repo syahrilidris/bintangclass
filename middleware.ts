@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   const signedIn = Boolean(data?.claims?.sub)
   const path = request.nextUrl.pathname
 
-  if (!signedIn && (path.startsWith('/app') || path.startsWith('/c/'))) {
+  if (!signedIn && (path.startsWith('/app') || path.startsWith('/c/') || path.startsWith('/admin'))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.search = `?next=${encodeURIComponent(path)}`

@@ -126,6 +126,20 @@ export type Database = {
       accept_invite: { Args: { p_display_name?: string; p_token: string }; Returns: string }
       create_centre: { Args: { p_city?: string; p_display_name?: string; p_name: string; p_phone?: string; p_slug: string }; Returns: string }
       invite_info: { Args: { p_token: string }; Returns: { centre_name: string; email: string; role: string }[] }
+      platform_centre_stats: {
+        Args: Record<string, never>
+        Returns: {
+          centre_id: string; name: string; slug: string; city: string | null; plan: string; status: string; created_at: string
+          owner_name: string | null; active_students: number; classes: number; teachers: number; parents: number
+          attendance_30d: number; present_30d: number; attendance_14d: number
+          recordings_30d: number; replied_30d: number; progress_30d: number
+          last_activity: string; stage: string | null; next_follow_up: string | null
+        }[]
+      }
+      platform_daily_activity: {
+        Args: { days?: number }
+        Returns: { day: string; attendance: number; recordings: number; progress: number; signups: number }[]
+      }
     }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
