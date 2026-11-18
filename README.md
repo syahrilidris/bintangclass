@@ -19,9 +19,9 @@ decides what each role sees. There is no service-role key in the app.
 
 ## Tests
 
-- **Database isolation** (`supabase/tests/rls_test.sql`): 68 checks across every role. Runs in CI on every PR.
+- **Database isolation** (`supabase/tests/rls_test.sql`): 82 checks across every role. Runs in CI on every PR.
 - **End-to-end** (`e2e/pilot-flow.spec.ts`): owner, teacher (on a phone) and parent go through the pilot
-  journey in real browsers against a local Supabase. Runs in CI on every PR; screenshots are pushed to
+  journey in real browsers against a local Supabase, including recording practice with a fake microphone. Runs in CI on every PR; screenshots are pushed to
   the `e2e-screenshots` branch under `shots/<commit>/`.
   Locally: `supabase start`, point `.env.local` at it, `npm run build && npm start`, then `npx playwright test`.
 
@@ -31,7 +31,7 @@ decides what each role sees. There is no service-role key in the app.
 supabase/
   config.toml   local Supabase (used by CI)
   migrations/   schema, roles and Row Level Security, applied in order
-  tests/        rls_test.sql — signs in as every role and checks isolation (68 checks)
+  tests/        rls_test.sql — signs in as every role and checks isolation (82 checks)
 app/            Next.js routes: sign-in, /app (centres), /c/<centre>/… (role-aware), /invite/<token>
 components/     star mark, star track, forms
 lib/            Supabase client, roles, reading levels
@@ -50,7 +50,7 @@ Following the product plan's build order:
 - [x] **Phase 0, week 1** — tenants, roles, Row Level Security, recordings storage, activity log, isolation test in CI
 - [ ] Phase 0 — name and domain, recruit 3 pilot centres (owner actions)
 - [x] **Phase 1, part 1** — sign-in, centres, invites (link + WhatsApp), classes, students, Iqra levels, attendance, parent view
-- [ ] **Phase 1, part 2** — homework recordings (parent records, teacher listens and replies)
+- [x] **Phase 1, part 2** — homework recordings: teacher sets practice, parent records at home, teacher replies with stars and a note
 - [ ] **Phase 2, weeks 6–9** — fees and payments, monthly reports, centre plan goes live
 - [ ] **Phase 3, weeks 10–14** — paid ustaz checks, payouts, ratings
 
@@ -63,4 +63,14 @@ Add the first platform admin from the SQL editor after they have signed up once:
 ```sql
 insert into public.platform_admins (user_id)
 select id from auth.users where email = 'you@example.com';
+```
+
+## Demo accounts
+
+A demo centre (*Kelas Mengaji Nurul Iman*, `/c/nurul-iman-demo`) lives in `bintangclass-db` with
+`owner@`, `teacher@` and `parent@bintangclass.test`. Remove them before launch:
+
+```sql
+delete from public.centres where slug = 'nurul-iman-demo';
+delete from auth.users where email like '%@bintangclass.test';
 ```

@@ -141,10 +141,11 @@ export function Recorder({
               <span className="h-2.5 w-2.5 rounded-full bg-white" aria-hidden /> Start recording
             </button>
           ) : null}
-          <label className={`text-sm ${canRecord ? 'text-muted' : ''}`}>
-            {canRecord ? 'Or choose a recording from this phone: ' : 'Use your phone’s voice recorder, then choose the file: '}
-            <input type="file" accept="audio/*" capture className="mt-2 block text-sm" onChange={(e) => picked(e.target.files?.[0])} />
+          <label className={canRecord ? 'link cursor-pointer self-start text-sm' : 'btn btn-primary w-full cursor-pointer sm:w-auto'}>
+            {canRecord ? 'Or choose a recording already on this phone' : 'Choose a recording from this phone'}
+            <input type="file" accept="audio/*" className="sr-only" onChange={(e) => picked(e.target.files?.[0])} />
           </label>
+          {!canRecord ? <p className="text-sm text-muted">Record with your phone’s voice recorder app first, then choose the file here.</p> : null}
         </div>
       ) : null}
 

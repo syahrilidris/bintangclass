@@ -6,8 +6,8 @@ import { Star } from './star'
 export function StarTrack({ book, page, size = 'md' }: { book: string; page: number; size?: 'sm' | 'md' | 'lg' }) {
   const current = bookIndex(book)
   const frac = pageFraction(book, page)
-  const px = size === 'lg' ? 34 : size === 'md' ? 22 : 14
-  const gap = size === 'lg' ? 'gap-3' : size === 'md' ? 'gap-1.5' : 'gap-1'
+  const px = size === 'lg' ? 30 : size === 'md' ? 22 : 14
+  const gap = size === 'lg' ? 'gap-2 sm:gap-3' : size === 'md' ? 'gap-1.5' : 'gap-1'
   const label = `${book}, page ${page}. Book ${current + 1} of ${BOOKS.length}.`
 
   return (
