@@ -137,7 +137,9 @@ test('owner assigns the teacher to the class', async () => {
   await page.getByLabel('Teacher').selectOption({ label: teacher.name })
   await page.getByRole('button', { name: 'Save class' }).click()
   await expect(page.getByText('Class saved.')).toBeVisible()
-  await expect(page.getByText(`Taught by ${teacher.name}`)).toBeVisible()
+  await expect.soft(page.getByText(`Taught by ${teacher.name}`), 'page refreshes after saving').toBeVisible({ timeout: 3000 })
+  await page.reload()
+  await expect(page.getByText(`Taught by ${teacher.name}`), 'teacher saved').toBeVisible()
 })
 
 test('teacher marks attendance and records progress on a phone', async ({ browser }) => {
