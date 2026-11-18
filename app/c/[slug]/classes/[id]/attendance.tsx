@@ -57,20 +57,20 @@ export function Attendance({
       {error ? <p className="notice notice-error mt-3" role="alert">{error}</p> : null}
       <ul className="panel rows mt-4">
         {optimistic.map((r) => (
-          <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
-            <div className="min-w-0 flex-1">
+          <li key={r.id} className="grid gap-3 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">
+            <div className="min-w-0">
               <Link href={`/c/${slug}/students/${r.id}`} className="font-semibold hover:underline">{r.full_name}</Link>
-              <div className="mt-1 flex items-center gap-3">
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                 <StarTrack book={r.book} page={r.page} size="sm" />
                 <span className="text-xs text-muted">{r.book}, p. {r.page}</span>
               </div>
             </div>
-            <div className="flex gap-2" role="group" aria-label={`Attendance for ${r.full_name}`}>
+            <div className="grid grid-cols-2 gap-2 sm:flex" role="group" aria-label={`Attendance for ${r.full_name}`}>
               <button
                 disabled={!canMark}
                 aria-pressed={r.present === true}
                 onClick={() => set(r.id, r.present === true ? null : true)}
-                className={`btn min-w-24 ${r.present === true ? 'bg-teal-600 text-white' : 'btn-quiet'}`}
+                className={`btn sm:min-w-24 ${r.present === true ? 'bg-teal-600 text-white' : 'btn-quiet'}`}
               >
                 Present
               </button>
@@ -78,7 +78,7 @@ export function Attendance({
                 disabled={!canMark}
                 aria-pressed={r.present === false}
                 onClick={() => set(r.id, r.present === false ? null : false)}
-                className={`btn min-w-24 ${r.present === false ? 'bg-danger text-white' : 'btn-quiet'}`}
+                className={`btn sm:min-w-24 ${r.present === false ? 'bg-danger text-white' : 'btn-quiet'}`}
               >
                 Absent
               </button>

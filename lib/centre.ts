@@ -52,3 +52,12 @@ export function displayName(user: { email?: string | null; user_metadata?: Recor
 export function todayMY(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kuala_Lumpur' }).format(new Date())
 }
+
+const TITLES = /^(ustazah|ustaz|ust\.?|cikgu|puan|pn\.?|encik|en\.?|tuan|hajah|haji|hj\.?|dr\.?|datin|dato'?|datuk)$/i
+
+/** How to greet someone: "Puan Siti Aminah" → "Puan Siti", "Aisyah Rahman" → "Aisyah". */
+export function greetingName(full: string | null | undefined): string {
+  const words = (full ?? '').trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return ''
+  return TITLES.test(words[0]) && words[1] ? `${words[0]} ${words[1]}` : words[0]
+}

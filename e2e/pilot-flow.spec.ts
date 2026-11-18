@@ -65,7 +65,7 @@ test('owner signs up and sets up a centre', async ({ browser }) => {
   await page.getByRole('button', { name: 'Set up centre' }).click()
 
   await expect(page).toHaveURL(new RegExp(`/c/${slug}$`))
-  await expect(page.getByRole('heading', { name: /Assalamualaikum, Ustazah/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Assalamualaikum, Ustazah Nurul' })).toBeVisible()
   await expect(page.getByText('Get your centre ready')).toBeVisible()
   await shot(page, '04-owner-today-empty')
 })

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getCentre, todayMY } from '@/lib/centre'
+import { getCentre, greetingName, todayMY } from '@/lib/centre'
 import { loadPeople } from '@/lib/people'
 import { StarTrack } from '@/components/star-track'
 import { Star } from '@/components/star'
@@ -48,7 +48,7 @@ async function StaffHome({ slug }: { slug: string }) {
   }
   const activeCount = students?.length ?? 0
   const teacherCount = [...people.values()].filter((p) => p.role === 'teacher').length
-  const firstName = (myName ?? '').split(' ')[0]
+  const firstName = greetingName(myName)
 
   const setup = isManager && (classes.length === 0 || activeCount === 0 || teacherCount === 0)
 
@@ -156,7 +156,7 @@ async function ParentHome({ slug }: { slug: string }) {
     supabase.from('attendance').select('student_id, present').eq('centre_id', centre.id).gte('day', monthStart),
     supabase.from('progress').select('student_id, note, created_at').eq('centre_id', centre.id).not('note', 'is', null).order('created_at', { ascending: false }).limit(20),
   ])
-  const firstName = (myName ?? '').split(' ')[0]
+  const firstName = greetingName(myName)
 
   return (
     <div className="grid gap-8">
