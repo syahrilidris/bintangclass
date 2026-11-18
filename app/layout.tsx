@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { HydratedMarker } from '@/components/hydrated'
 
 export const metadata: Metadata = {
   title: { default: 'Bintang Class', template: '%s · Bintang Class' },
@@ -15,7 +16,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        <HydratedMarker />
+        {children}
+      </body>
     </html>
   )
 }

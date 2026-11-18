@@ -31,9 +31,8 @@ export async function saveClass(_: FormState, f: FormData): Promise<FormState> {
   const row = { name: str(f, 'name'), schedule: opt(f, 'schedule'), teacher_id: opt(f, 'teacher_id') }
   if (!row.name) return { error: 'Give the class a name.' }
   const { data, error } = id
-    ? await supabase.from('classes').update(row).eq('id', id).select('id, teacher_id').single()
-    : await supabase.from('classes').insert({ ...row, centre_id: centre.id }).select('id, teacher_id').single()
-  if (process.env.E2E_DEBUG) console.log('saveClass', JSON.stringify({ id, row, keys: [...f.keys()], data, error }))
+    ? await supabase.from('classes').update(row).eq('id', id).select('id').single()
+    : await supabase.from('classes').insert({ ...row, centre_id: centre.id }).select('id').single()
   if (error) return { error: dbError(error.message) }
   revalidatePath(root, 'layout')
   if (!id) redirect(`${root}/classes/${data.id}`)

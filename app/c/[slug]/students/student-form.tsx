@@ -3,6 +3,7 @@
 import { useActionState, useRef, useEffect, useState } from 'react'
 import { saveStudent } from '../actions'
 import { Submit } from '@/components/submit'
+import { useHydrated } from '@/components/hydrated'
 import { FormMessage } from '@/components/form-message'
 import { BOOKS } from '@/lib/books'
 
@@ -19,6 +20,7 @@ export function StudentForm({
   initial?: Initial
   defaultClass?: string
 }) {
+  const hydrated = useHydrated()
   const [state, action] = useActionState(saveStudent, undefined)
   const formRef = useRef<HTMLFormElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -79,11 +81,11 @@ export function StudentForm({
       ) : null}
       <FormMessage state={state} />
       {initial ? (
-        <Submit pending="Saving…">Save details</Submit>
+        <Submit pending="Saving…" disabled={!hydrated}>Save details</Submit>
       ) : (
         <div className="grid gap-2">
-          <Submit pending="Adding…">Add student</Submit>
-          <button name="another" value="1" className="btn btn-quiet">Add and add another</button>
+          <Submit pending="Adding…" disabled={!hydrated}>Add student</Submit>
+          <button name="another" value="1" className="btn btn-quiet" disabled={!hydrated}>Add and add another</button>
         </div>
       )}
     </form>

@@ -13,11 +13,17 @@ const password = `E2e-${run}-pass`
 const centreName = 'Kelas Mengaji Nurul Iman'
 const slug = `nurul-iman-${run}`
 
+/** Wait until React has taken over the page, so input isn't lost to hydration. */
+async function ready(page: Page) {
+  await page.locator('html[data-hydrated]').waitFor({ state: 'attached' })
+}
+
 async function shot(page: Page, name: string) {
   await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true })
 }
 
 async function signUp(page: Page, who: { name: string; email: string }) {
+  await ready(page)
   await page.getByLabel('Your name').fill(who.name)
   const email = page.getByLabel('Email')
   if (!(await email.inputValue())) await email.fill(who.email)
@@ -42,6 +48,7 @@ test('owner signs up and sets up a centre', async ({ browser }) => {
   ownerPage = await newPerson(browser)
   const page = ownerPage
   await page.goto('/')
+  await ready(page)
   await shot(page, '01-landing')
   await page.getByRole('link', { name: 'Start free' }).click()
   await shot(page, '02-signup')
@@ -49,6 +56,7 @@ test('owner signs up and sets up a centre', async ({ browser }) => {
 
   await expect(page.getByRole('heading', { name: 'Set up your centre' })).toBeVisible()
   await page.getByRole('link', { name: 'Set up a centre' }).click()
+  await ready(page)
   await page.getByLabel('Centre name').fill(centreName)
   await page.getByLabel('Web address').fill(slug)
   await page.getByLabel('Phone or WhatsApp').fill('012-345 6789')
@@ -65,12 +73,15 @@ test('owner signs up and sets up a centre', async ({ browser }) => {
 test('owner adds a class and students with their Iqra level', async () => {
   const page = ownerPage
   await page.goto(`/c/${slug}/classes`)
+  await ready(page)
   await page.getByLabel('Class name').fill('Iqra Pagi')
   await page.getByLabel('When it meets').fill('Isnin & Rabu, 5.00 pm')
   await page.getByRole('button', { name: 'Add class' }).click()
   await expect(page.getByRole('heading', { name: 'Iqra Pagi' })).toBeVisible()
 
   await page.goto(`/c/${slug}/students`)
+
+  await ready(page)
   const add = async (name: string, book: string, pageNo: string, another: boolean) => {
     await page.getByLabel('Full name').fill(name)
     await page.getByLabel('Class').selectOption({ label: 'Iqra Pagi' })
@@ -89,6 +100,8 @@ test('owner adds a class and students with their Iqra level', async () => {
   await shot(page, '05-student-new')
 
   await page.goto(`/c/${slug}/students`)
+
+  await ready(page)
   await expect(page.getByRole('link', { name: /Muhammad Umar/ })).toBeVisible()
   umarUrl = (await page.getByRole('link', { name: /Muhammad Umar/ }).getAttribute('href'))!
   await shot(page, '06-students-list')
@@ -97,6 +110,7 @@ test('owner adds a class and students with their Iqra level', async () => {
 test('owner invites a teacher and a parent', async () => {
   const page = ownerPage
   await page.goto(`/c/${slug}/people`)
+  await ready(page)
   await page.getByLabel('Their email').fill(teacher.email)
   await page.getByLabel('Joins as').selectOption('teacher')
   await page.getByRole('button', { name: 'Create invitation' }).click()
@@ -107,6 +121,8 @@ test('owner invites a teacher and a parent', async () => {
   await shot(page, '07-people-invite-teacher')
 
   await page.goto(aisyahUrl)
+
+  await ready(page)
   await page.getByLabel('Their email').fill(parent.email)
   await page.getByRole('button', { name: 'Create invitation' }).click()
   parentInvite = await page.getByLabel('Invitation link').inputValue()
@@ -116,16 +132,19 @@ test('owner invites a teacher and a parent', async () => {
 test('teacher joins from the invite link', async ({ browser }) => {
   const page = await newPerson(browser)
   await page.goto(new URL(teacherInvite).pathname)
+  await ready(page)
   await expect(page.getByRole('heading', { name: `Join ${centreName}` })).toBeVisible()
   await shot(page, '08-invite-landing')
   await page.getByRole('link', { name: 'Create account and join' }).click()
   await expect(page.getByLabel('Email')).toHaveValue(teacher.email)
   await signUp(page, teacher)
+  await ready(page)
   await page.getByRole('button', { name: `Join ${centreName}` }).click()
   await expect(page).toHaveURL(new RegExp(`/c/${slug}$`))
   await expect(page.getByText('You haven’t been given a class yet')).toBeVisible()
   // Teachers have no People page
   const res = await page.goto(`/c/${slug}/people`)
+  await ready(page)
   expect(res?.status()).toBe(404)
   await page.context().close()
 })
@@ -133,7 +152,9 @@ test('teacher joins from the invite link', async ({ browser }) => {
 test('owner assigns the teacher to the class', async () => {
   const page = ownerPage
   await page.goto(`/c/${slug}/classes`)
+  await ready(page)
   await page.getByRole('link', { name: /Iqra Pagi/ }).click()
+  await expect(page.getByRole('heading', { name: 'Iqra Pagi' })).toBeVisible()
   const select = page.getByLabel('Teacher')
   await select.selectOption({ label: teacher.name })
   await expect(select).toHaveValue(/^[0-9a-f-]{36}$/)
@@ -141,12 +162,14 @@ test('owner assigns the teacher to the class', async () => {
   await expect(page.getByText('Class saved.')).toBeVisible()
   await expect(page.getByText(`Taught by ${teacher.name}`)).toBeVisible()
   await page.reload()
+  await ready(page)
   await expect(page.getByLabel('Teacher')).toHaveValue(/^[0-9a-f-]{36}$/)
 })
 
 test('teacher marks attendance and records progress on a phone', async ({ browser }) => {
   const page = await newPerson(browser, true)
   await page.goto('/login')
+  await ready(page)
   await page.getByLabel('Email').fill(teacher.email)
   await page.getByLabel('Password').fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
@@ -163,10 +186,13 @@ test('teacher marks attendance and records progress on a phone', async ({ browse
   await shot(page, '10-teacher-attendance-mobile')
   // Saved, not just shown: reload and check again
   await page.reload()
+  await ready(page)
   await expect(page.getByText('2 present, 1 absent')).toBeVisible()
   await expect(row('Nur Iman').getByRole('button', { name: 'Absent' })).toHaveAttribute('aria-pressed', 'true')
 
   await page.goto(aisyahUrl)
+
+  await ready(page)
   await expect(page.getByLabel('Page', { exact: true })).toHaveValue('23')
   await page.getByLabel('Note for the parent').fill('Good makhraj today. Practise the mad letters at home.')
   await page.getByRole('button', { name: 'Save progress' }).click()
@@ -179,9 +205,11 @@ test('teacher marks attendance and records progress on a phone', async ({ browse
 test('parent joins and sees only their own child', async ({ browser }) => {
   const page = await newPerson(browser)
   await page.goto(new URL(parentInvite).pathname)
+  await ready(page)
   await expect(page.getByText('follow your child’s reading')).toBeVisible()
   await page.getByRole('link', { name: 'Create account and join' }).click()
   await signUp(page, parent)
+  await ready(page)
   await page.getByRole('button', { name: `Join ${centreName}` }).click()
   await expect(page).toHaveURL(new RegExp(`/c/${slug}$`))
   await expect(page.getByText('Aisyah binti Rahman')).toBeVisible()
@@ -196,8 +224,11 @@ test('parent joins and sees only their own child', async ({ browser }) => {
   await shot(page, '13-parent-child')
 
   const res = await page.goto(umarUrl)
+
+  await ready(page)
   expect(res?.status()).toBe(404)
   const people = await page.goto(`/c/${slug}/people`)
+  await ready(page)
   expect(people?.status()).toBe(404)
   await page.context().close()
 })
@@ -205,10 +236,12 @@ test('parent joins and sees only their own child', async ({ browser }) => {
 test('owner sees the day at a glance', async () => {
   const page = ownerPage
   await page.goto(`/c/${slug}`)
+  await ready(page)
   await expect(page.getByText('Marked')).toBeVisible()
   await expect(page.getByText(/reached Iqra 4, page 23/)).toBeVisible()
   await shot(page, '14-owner-today')
   await page.goto(`/c/${slug}/people`)
+  await ready(page)
   await expect(page.getByText(teacher.name)).toBeVisible()
   await expect(page.getByText(parent.name)).toBeVisible()
   await shot(page, '15-people')

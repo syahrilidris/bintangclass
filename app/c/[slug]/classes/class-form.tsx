@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 import { saveClass } from '../actions'
 import { Submit } from '@/components/submit'
+import { useHydrated } from '@/components/hydrated'
 import { FormMessage } from '@/components/form-message'
 
 export function ClassForm({
@@ -14,6 +15,7 @@ export function ClassForm({
   teachers: { user_id: string; name: string }[]
   initial?: { id: string; name: string; schedule: string | null; teacher_id: string | null }
 }) {
+  const hydrated = useHydrated()
   const [state, action] = useActionState(saveClass, undefined)
   // Controlled so the choice on screen is always the one submitted.
   const [teacherId, setTeacherId] = useState(initial?.teacher_id ?? '')
@@ -40,7 +42,7 @@ export function ClassForm({
         {teachers.length === 0 ? <small>Invite teachers from People, then assign them here.</small> : null}
       </label>
       <FormMessage state={state} />
-      <Submit pending="Saving…">{initial ? 'Save class' : 'Add class'}</Submit>
+      <Submit pending="Saving…" disabled={!hydrated}>{initial ? 'Save class' : 'Add class'}</Submit>
     </form>
   )
 }
