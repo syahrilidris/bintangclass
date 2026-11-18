@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getCentre, ROLE_LABEL } from '@/lib/centre'
 import { Logo, Star } from '@/components/star'
 import { SideNav, TabBar, type NavItem } from './nav'
+import { InstallBanner, InstallLink } from '@/components/pwa'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -55,15 +56,18 @@ export default async function CentreLayout({ children, params }: { children: Rea
         </nav>
         <div className="mt-auto border-t border-white/10 px-2 pt-4">
           <p className="truncate text-sm text-white/80">{myName || user.email}</p>
-          <form action="/auth/signout" method="post">
-            <button className="mt-1 text-xs text-white/50 hover:text-white">Sign out</button>
-          </form>
+          <div className="mt-1 flex gap-4">
+            <form action="/auth/signout" method="post">
+              <button className="text-xs text-white/50 hover:text-white">Sign out</button>
+            </form>
+            <InstallLink className="text-xs text-white/50 hover:text-white" />
+          </div>
         </div>
       </aside>
       </div>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-navy-900 px-5 py-3 lg:hidden">
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-navy-900 px-5 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] lg:hidden">
           <Link href={root} className="flex min-w-0 items-center gap-2">
             <Star size={22} fill="var(--color-brass)" />
             <span className="truncate font-semibold text-white">{centre.name}</span>
@@ -85,7 +89,10 @@ export default async function CentreLayout({ children, params }: { children: Rea
           </div>
         ) : null}
 
-        <main className="mx-auto max-w-5xl px-5 pb-28 pt-6 lg:px-10 lg:pb-12 lg:pt-10">{children}</main>
+        <main className="mx-auto max-w-5xl px-5 pb-28 pt-6 lg:px-10 lg:pb-12 lg:pt-10">
+          <InstallBanner />
+          {children}
+        </main>
       </div>
       <TabBar items={items} root={root} />
     </div>

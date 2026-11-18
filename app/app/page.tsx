@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireUser, ROLE_LABEL, type Role } from '@/lib/centre'
 import { Logo, Star } from '@/components/star'
+import { InstallBanner } from '@/components/pwa'
 
 export const metadata = { title: 'Your centres' }
 
@@ -25,6 +26,8 @@ export default async function AppHome() {
           <button className="text-sm text-muted hover:text-ink">Sign out</button>
         </form>
       </header>
+
+      <div className="mt-8"><InstallBanner /></div>
 
       {centres.length === 0 ? (
         <section className="mt-16">
