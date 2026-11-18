@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { getCentre } from '@/lib/centre'
 
 export type PracticeState = { error?: string; ok?: string } | undefined
@@ -43,6 +44,9 @@ export async function replyToSubmission(_: PracticeState, f: FormData): Promise<
   if (error) return { error: friendly(error.message) }
   if (!data?.length) return { error: 'This recording is no longer available.' }
   revalidatePath(`/c/${slug}`, 'layout')
+  // From the inbox the item leaves the "To listen" list, so confirm on the page instead.
+  const back = str(f, 'return_to')
+  if (back.startsWith(`/c/${slug}/`)) redirect(back)
   return { ok: 'Reply sent.' }
 }
 

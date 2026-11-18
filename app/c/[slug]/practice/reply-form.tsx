@@ -7,7 +7,7 @@ import { Star } from '@/components/star'
 import { useHydrated } from '@/components/hydrated'
 
 // Stars, Good or Repeat, and an optional note. Big targets: teachers reply on their phones between classes.
-export function ReplyForm({ slug, id, initial }: { slug: string; id: string; initial?: { stars: number | null; verdict: string | null; feedback: string | null } }) {
+export function ReplyForm({ slug, id, initial, returnTo }: { slug: string; id: string; initial?: { stars: number | null; verdict: string | null; feedback: string | null }; returnTo?: string }) {
   const hydrated = useHydrated()
   const [state, action] = useActionState(replyToSubmission, undefined)
   const [stars, setStars] = useState(initial?.stars ?? 0)
@@ -19,6 +19,7 @@ export function ReplyForm({ slug, id, initial }: { slug: string; id: string; ini
     <form action={action} className="grid gap-3">
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="id" value={id} />
+      {returnTo ? <input type="hidden" name="return_to" value={returnTo} /> : null}
       <input type="hidden" name="stars" value={stars || ''} />
       <input type="hidden" name="verdict" value={verdict} />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">

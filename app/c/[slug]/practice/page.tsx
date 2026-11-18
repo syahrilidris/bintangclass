@@ -14,10 +14,10 @@ export default async function PracticePage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ show?: string }>
+  searchParams: Promise<{ show?: string; sent?: string }>
 }) {
   const { slug } = await params
-  const { show } = await searchParams
+  const { show, sent } = await searchParams
   const { supabase, centre, isStaff, canWrite } = await getCentre(slug)
   if (!isStaff) notFound()
   const root = `/c/${slug}`
@@ -42,6 +42,12 @@ export default async function PracticePage({
         <h1 className="page-title">Practice</h1>
         <p className="mt-1 text-muted">Recordings parents send from home. Listen, then reply with stars and a note.</p>
       </header>
+
+      {sent ? (
+        <p className="notice notice-info" role="status">
+          Reply sent. The parent can see it now.{waiting ? ` ${waiting} more to listen to.` : ' That’s everything for now.'}
+        </p>
+      ) : null}
 
       <nav className="flex gap-2" aria-label="Show">
         <Link href="?" className={`rounded-full px-3 py-1 text-sm font-semibold ${!replied ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>
@@ -72,7 +78,7 @@ export default async function PracticePage({
               {r.reviewed_at ? (
                 <Reply s={r as Submission} teacher={r.reviewed_by ? greetingName(people.get(r.reviewed_by)?.name) : undefined} />
               ) : canWrite ? (
-                <ReplyForm slug={slug} id={r.id} />
+                <ReplyForm slug={slug} id={r.id} returnTo={`${root}/practice?sent=1`} />
               ) : null}
             </li>
           ))}
