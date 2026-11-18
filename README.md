@@ -17,6 +17,15 @@ npm run dev                  # http://localhost:3000
 The app talks to Supabase as the signed-in user with the publishable key only; Row Level Security
 decides what each role sees. There is no service-role key in the app.
 
+## Installing on a phone
+
+Bintang Class is a Progressive Web App: no app store needed.
+- **Android (Chrome, Samsung Internet):** an *Install app* button appears in the app; or browser menu, then *Install app*.
+- **iPhone (Safari):** Share, then *Add to Home Screen*. The app shows these steps itself.
+
+The service worker (`public/sw.js`) caches only build files and icons, never pages, so a child's
+records are not left on a shared family phone. Bump `VERSION` in it when changing what it caches.
+
 ## Tests
 
 - **Database isolation** (`supabase/tests/rls_test.sql`): 82 checks across every role. Runs in CI on every PR.
@@ -51,6 +60,7 @@ Following the product plan's build order:
 - [ ] Phase 0 — name and domain, recruit 3 pilot centres (owner actions)
 - [x] **Phase 1, part 1** — sign-in, centres, invites (link + WhatsApp), classes, students, Iqra levels, attendance, parent view
 - [x] **Phase 1, part 2** — homework recordings: teacher sets practice, parent records at home, teacher replies with stars and a note
+- [x] **Install as an app** — phones can add Bintang Class to the home screen (PWA: manifest, star icons, offline page, install banner)
 - [ ] **Phase 2, weeks 6–9** — fees and payments, monthly reports, centre plan goes live
 - [ ] **Phase 3, weeks 10–14** — paid ustaz checks, payouts, ratings
 
