@@ -100,9 +100,10 @@ test('owner invites a teacher and a parent', async () => {
   await page.getByLabel('Their email').fill(teacher.email)
   await page.getByLabel('Joins as').selectOption('teacher')
   await page.getByRole('button', { name: 'Create invitation' }).click()
-  teacherInvite = await page.getByLabel('Invitation link').inputValue()
+  // The new link shows in the form and again under "Waiting to join"; both are the same invitation.
+  teacherInvite = await page.getByLabel('Invitation link').first().inputValue()
   expect(teacherInvite).toContain('/invite/')
-  await expect(page.getByRole('link', { name: 'Send on WhatsApp' })).toHaveAttribute('href', /wa\.me/)
+  await expect(page.getByRole('link', { name: 'Send on WhatsApp' }).first()).toHaveAttribute('href', /wa\.me/)
   await shot(page, '07-people-invite-teacher')
 
   await page.goto(aisyahUrl)
