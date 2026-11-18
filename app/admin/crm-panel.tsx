@@ -34,7 +34,7 @@ export async function CrmPanel({ supabase, accountId }: { supabase: SupabaseClie
             </a>
           ) : null}
         </div>
-        <div className="mt-4"><AccountForm a={a} /></div>
+        <div className="mt-4"><AccountForm key={a.updated_at} a={a} /></div>
       </section>
       <section>
         <h2 className="section-title">History</h2>

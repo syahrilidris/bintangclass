@@ -54,7 +54,7 @@ export default async function AdminCentrePage({ params }: { params: Promise<{ id
             On the paid plan this centre would be {rm(c.active_students * PRICE_PER_STUDENT)} a month. Read-only keeps everything but stops
             changes, for unpaid accounts after the grace period.
           </p>
-          <div className="mt-4"><PlanForm centreId={c.centre_id} plan={c.plan} status={c.status} /></div>
+          <div className="mt-4"><PlanForm key={`${c.plan}-${c.status}`} centreId={c.centre_id} plan={c.plan} status={c.status} /></div>
         </div>
       </section>
 

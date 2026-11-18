@@ -13,6 +13,10 @@ const HEALTH_STYLE: Record<Health, string> = {
   paused: 'bg-paper text-muted',
 }
 
+function plural(n: number, word: string) {
+  return `${n} ${word}${n === 1 ? '' : 's'}`
+}
+
 function pct(a: number, b: number) {
   return b === 0 ? null : Math.round((a / b) * 100)
 }
@@ -52,7 +56,7 @@ export default async function PlatformOverview() {
       <section aria-label="Headline numbers" className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: 'Centres', value: all.length.toString(), sub: `${usedWeekly} used in the last 14 days` },
-          { label: 'Active students', value: students.toLocaleString('en-MY'), sub: `${all.reduce((a, c) => a + c.parents, 0)} parents, ${all.reduce((a, c) => a + c.teachers, 0)} staff` },
+          { label: 'Active students', value: students.toLocaleString('en-MY'), sub: plural(all.reduce((a, c) => a + c.parents, 0), 'parent') + ', ' + plural(all.reduce((a, c) => a + c.teachers, 0), 'staff member') },
           {
             label: 'Monthly revenue',
             value: rm(revenue),
@@ -61,7 +65,7 @@ export default async function PlatformOverview() {
           {
             label: 'Teacher reply rate',
             value: pct(replied, recs) === null ? '–' : `${pct(replied, recs)}%`,
-            sub: `${replied} of ${recs} recordings answered, 30 days`,
+            sub: `${replied} of ${plural(recs, 'recording')} answered, 30 days`,
           },
         ].map((k) => (
           <div key={k.label} className="bg-white px-5 py-5">

@@ -132,7 +132,7 @@ export default async function ClassPage({
           <div>
             <h2 className="section-title">Class details</h2>
             <div className="mt-4">
-              <ClassForm slug={slug} teachers={teachers} initial={cl} />
+              <ClassForm key={`${cl.teacher_id}-${cl.name}-${cl.schedule}`} slug={slug} teachers={teachers} initial={cl} />
             </div>
           </div>
           <div>

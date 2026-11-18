@@ -28,7 +28,7 @@ records are not left on a shared family phone. Bump `VERSION` in it when changin
 
 ## Tests
 
-- **Database isolation** (`supabase/tests/rls_test.sql`): 82 checks across every role. Runs in CI on every PR.
+- **Database isolation** (`supabase/tests/rls_test.sql`): 87 checks across every role. Runs in CI on every PR.
 - **End-to-end** (`e2e/pilot-flow.spec.ts`): owner, teacher (on a phone) and parent go through the pilot
   journey in real browsers against a local Supabase, including recording practice with a fake microphone. Runs in CI on every PR; screenshots are pushed to
   the `e2e-screenshots` branch under `shots/<commit>/`.
@@ -40,7 +40,7 @@ records are not left on a shared family phone. Bump `VERSION` in it when changin
 supabase/
   config.toml   local Supabase (used by CI)
   migrations/   schema, roles and Row Level Security, applied in order
-  tests/        rls_test.sql — signs in as every role and checks isolation (82 checks)
+  tests/        rls_test.sql — signs in as every role and checks isolation (87 checks)
 app/            Next.js routes: sign-in, /app (centres), /c/<centre>/… (role-aware), /invite/<token>
 components/     star mark, star track, forms
 lib/            Supabase client, roles, reading levels
@@ -61,6 +61,7 @@ Following the product plan's build order:
 - [x] **Phase 1, part 1** — sign-in, centres, invites (link + WhatsApp), classes, students, Iqra levels, attendance, parent view
 - [x] **Phase 1, part 2** — homework recordings: teacher sets practice, parent records at home, teacher replies with stars and a note
 - [x] **Install as an app** — phones can add Bintang Class to the home screen (PWA: manifest, star icons, offline page, install banner)
+- [x] **Platform dashboard** — overall statistics, centre health, plan controls, CRM and leads at `/admin`
 - [ ] **Phase 2, weeks 6–9** — fees and payments, monthly reports, centre plan goes live
 - [ ] **Phase 3, weeks 10–14** — paid ustaz checks, payouts, ratings
 
@@ -75,10 +76,25 @@ insert into public.platform_admins (user_id)
 select id from auth.users where email = 'you@example.com';
 ```
 
+## Platform admin (you)
+
+Centre owners and admins only ever see their own centre. The **platform admin** sees across all centres
+at `/admin`: centres, active students, monthly revenue, teacher reply rate, 30-day activity, each
+centre's health (New, Active, Quiet, At risk, Paused), plan and status controls, and the CRM (contacts,
+stage, follow-ups, notes, leads). Children's names and recordings are never shown there; the numbers
+come from `platform_centre_stats()` and `platform_daily_activity()`, which return counts only.
+
+There is deliberately no button to make someone a platform admin. After they've signed up once:
+
+```sql
+insert into public.platform_admins (user_id)
+select id from auth.users where email = 'you@example.com';
+```
+
 ## Demo accounts
 
 A demo centre (*Kelas Mengaji Nurul Iman*, `/c/nurul-iman-demo`) lives in `bintangclass-db` with
-`owner@`, `teacher@` and `parent@bintangclass.test`. Remove them before launch:
+`owner@`, `teacher@` and `parent@bintangclass.test`, plus a demo platform admin `admin@bintangclass.test`. Remove them before launch:
 
 ```sql
 delete from public.centres where slug = 'nurul-iman-demo';

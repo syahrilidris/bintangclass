@@ -12,7 +12,7 @@ the publishable key, so **RLS is the security boundary** — not the Next.js app
 | **admin** | Office staff | Everything in their centre, including the activity log | Teachers, parents, classes, students, guardians, invites |
 | **teacher** | Ustaz / ustazah | Students in classes they teach, with their attendance, progress and recordings; the class list and staff list | Attendance, progress and recordings for those students, always in their own name |
 | **parent** | Guardian | Only their own children, their attendance, progress and recordings | Upload their own child's practice recordings |
-| **platform admin** | Bintang Class team (`platform_admins` table, added by service role only) | All centres, CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records, recordings or the activity log.** |
+| **platform admin** | Bintang Class team (`platform_admins` table, added by SQL only) | All centres' counts via `platform_centre_stats()` / `platform_daily_activity()` (no names), CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records, recordings or the activity log.** |
 
 A person can hold different roles in different centres.
 
@@ -43,8 +43,8 @@ Helper functions live in the `private` schema (not exposed over the API).
 ## Testing
 
 `supabase/tests/rls_test.sql` signs in as owner, admin, teacher, two parents, an outsider, a second
-centre's owner, a platform admin and a signed-out visitor, and runs 82 checks across tables,
-recordings and practice. It always rolls back.
+centre's owner, a platform admin and a signed-out visitor, and runs 87 checks across tables,
+recordings, practice and platform stats. It always rolls back.
 
 GitHub Actions (`.github/workflows/db-isolation.yml`) runs it on every pull request and every push to
 `main` against a fresh local Supabase built from the migrations. Make it a required check on `main`
@@ -52,7 +52,7 @@ so a leak blocks the merge, and so the deploy.
 
 ```sh
 psql "$DATABASE_URL" -f supabase/tests/rls_test.sql 2>&1 | grep "RLS TESTS"
-# RLS TESTS PASSED: 82/82
+# RLS TESTS PASSED: 87/87
 ```
 
 Run it after every migration that touches tables or policies.

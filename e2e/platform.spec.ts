@@ -73,7 +73,8 @@ test('platform admin sees every centre’s numbers, and manages plan and CRM', a
   await expect(page.getByText(/status active → read_only/)).toBeVisible()
   await page.getByLabel('Status').selectOption('active')
   await page.getByRole('button', { name: 'Save plan' }).click()
-  await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+  await expect(page.getByText(/status read_only → active/)).toBeVisible()
+  await expect(page.getByLabel('Status')).toHaveValue('active')
   await page.screenshot({ path: `${shots}/31-platform-centre.png`, fullPage: true })
 
   await page.goto('/admin/leads')

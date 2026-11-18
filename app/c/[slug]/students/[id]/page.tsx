@@ -190,7 +190,7 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
             <section>
               <h2 className="section-title">Details</h2>
               <div className="mt-4">
-                <StudentForm slug={slug} classes={classes ?? []} initial={s} />
+                <StudentForm key={`${s.class_id}-${s.status}-${s.full_name}-${s.monthly_fee}`} slug={slug} classes={classes ?? []} initial={s} />
               </div>
             </section>
           ) : null}
