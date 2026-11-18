@@ -3,9 +3,9 @@
 // Privacy: pages are never cached. A centre's students, levels and recordings are always fetched fresh,
 // so nothing private is left on a shared family phone. Only the app's own code, fonts and icons are cached.
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const STATIC = `bc-static-${VERSION}`
-const PRECACHE = ['/offline', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png']
+const PRECACHE = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(STATIC).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()))
@@ -28,7 +28,7 @@ self.addEventListener('fetch', (event) => {
 
   // Pages: always from the network; if offline, show the offline page.
   if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).catch(() => caches.match('/offline')))
+    event.respondWith(fetch(req).catch(() => caches.match('/offline.html')))
     return
   }
 

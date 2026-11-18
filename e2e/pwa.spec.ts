@@ -35,7 +35,7 @@ test('offline page shows when there is no connection', async ({ page, context })
   })
   await page.reload() // let the worker take control of the page
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
-  await expect.poll(() => page.evaluate(async () => Boolean(await caches.match('/offline')))).toBe(true)
+  await expect.poll(() => page.evaluate(async () => Boolean(await caches.match('/offline.html')))).toBe(true)
   await context.setOffline(true)
   await page.goto('/login').catch(() => {})
   await expect(page.getByRole('heading', { name: 'No connection' })).toBeVisible()
