@@ -134,7 +134,12 @@ test('owner assigns the teacher to the class', async () => {
   const page = ownerPage
   await page.goto(`/c/${slug}/classes`)
   await page.getByRole('link', { name: /Iqra Pagi/ }).click()
-  await page.getByLabel('Teacher').selectOption({ label: teacher.name })
+  const select = page.getByLabel('Teacher')
+  await select.selectOption({ label: teacher.name })
+  await expect(select).toHaveValue(/^[0-9a-f-]{36}$/)
+  page.on('request', (r) => {
+    if (r.method() === 'POST') console.log('POST', r.url(), (r.postData() ?? '').slice(0, 800))
+  })
   await page.getByRole('button', { name: 'Save class' }).click()
   await expect(page.getByText('Class saved.')).toBeVisible()
   await expect.soft(page.getByText(`Taught by ${teacher.name}`), 'page refreshes after saving').toBeVisible({ timeout: 3000 })

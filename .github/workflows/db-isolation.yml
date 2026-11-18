@@ -23,8 +23,8 @@ jobs:
         with:
           version: 3.2.0
 
-      - name: Start Supabase and apply migrations
-        run: supabase start
+      - name: Start the database and apply migrations
+        run: supabase db start
 
       - name: Run isolation tests
         run: |

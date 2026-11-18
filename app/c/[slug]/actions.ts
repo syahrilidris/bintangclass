@@ -29,6 +29,7 @@ export async function saveClass(_: FormState, f: FormData): Promise<FormState> {
   if (!isManager) return { error: 'Only the owner or an admin can change classes.' }
   const id = opt(f, 'id')
   const row = { name: str(f, 'name'), schedule: opt(f, 'schedule'), teacher_id: opt(f, 'teacher_id') }
+  if (process.env.E2E_DEBUG) console.log('saveClass', id, JSON.stringify(row), [...f.keys()].join(','))
   if (!row.name) return { error: 'Give the class a name.' }
   const { data, error } = id
     ? await supabase.from('classes').update(row).eq('id', id).select('id').single()
