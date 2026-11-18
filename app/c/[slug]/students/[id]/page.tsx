@@ -6,6 +6,12 @@ import { StarTrack } from '@/components/star-track'
 import { InviteForm } from '@/components/invite-form'
 import { ProgressForm } from './progress-form'
 import { StudentForm } from '../student-form'
+import { Recorder } from '@/components/recorder'
+import { RecordingHead, Reply, type Submission } from '@/components/practice'
+import { ReplyForm } from '../../practice/reply-form'
+import { removeSubmission } from '../../practice/actions'
+import { playbackUrls } from '@/lib/recordings'
+import { greetingName } from '@/lib/centre'
 
 export const metadata = { title: 'Student' }
 
@@ -35,6 +41,19 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
     isManager ? supabase.from('classes').select('id, name').eq('centre_id', centre.id).order('name') : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     loadPeople(supabase, centre.id),
   ])
+  const [{ data: homework }, { data: subs }] = await Promise.all([
+    s.class_id
+      ? supabase.from('homework').select('id, title, due_on').eq('class_id', s.class_id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from('submissions')
+      .select('id, audio_path, created_at, duration_s, stars, verdict, feedback, reviewed_at, reviewed_by, submitted_by, homework(title)')
+      .eq('student_id', id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+  ])
+  const urls = await playbackUrls(supabase, (subs ?? []).map((x) => x.audio_path))
+  const isGuardian = !isStaff
 
   const canRecord = canWrite && (isManager || s.classes?.teacher_id === user.id)
   const presentCount = (att ?? []).filter((a) => a.present).length
@@ -59,6 +78,44 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid content-start gap-10">
+          <section id="practice">
+            <h2 className="section-title">Practice at home</h2>
+            {homework ? (
+              <p className="mt-2">
+                <span className="font-semibold">{homework.title}</span>
+                {homework.due_on ? <span className="text-muted">, send by {new Intl.DateTimeFormat('en-MY', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(homework.due_on + 'T12:00:00Z'))}</span> : null}
+              </p>
+            ) : (
+              <p className="mt-2 text-muted">{isGuardian ? 'No practice set right now. You can still send a recording of today’s reading.' : 'No practice set for this class.'}</p>
+            )}
+            {isGuardian && canWrite ? (
+              <div className="mt-4">
+                <Recorder slug={slug} centreId={centre.id} studentId={s.id} homeworkId={homework?.id ?? null} childName={s.full_name.split(' ')[0]} />
+              </div>
+            ) : null}
+            {(subs ?? []).length > 0 ? (
+              <ul className="mt-6 grid gap-4">
+                {(subs ?? []).map((x) => (
+                  <li key={x.id} className="panel grid gap-3 p-4">
+                    <RecordingHead s={x as Submission} url={urls.get(x.audio_path)} />
+                    {!x.reviewed_at && isStaff && canWrite && canRecord ? (
+                      <ReplyForm slug={slug} id={x.id} />
+                    ) : (
+                      <Reply s={x as Submission} teacher={x.reviewed_by ? greetingName(people.get(x.reviewed_by)?.name) || undefined : undefined} />
+                    )}
+                    {!x.reviewed_at && x.submitted_by === user.id ? (
+                      <form action={removeSubmission}>
+                        <input type="hidden" name="slug" value={slug} />
+                        <input type="hidden" name="id" value={x.id} />
+                        <button className="text-sm font-semibold text-muted hover:text-danger">Take back this recording</button>
+                      </form>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+
           <section>
             <h2 className="section-title">Progress</h2>
             {(progress ?? []).length === 0 ? (

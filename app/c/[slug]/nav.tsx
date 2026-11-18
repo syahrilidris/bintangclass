@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export type NavItem = { href: string; label: string; icon: 'home' | 'classes' | 'students' | 'people' | 'settings' }
+export type NavItem = { href: string; label: string; icon: 'home' | 'classes' | 'students' | 'people' | 'settings' | 'practice'; badge?: number }
 
 const ICONS: Record<NavItem['icon'], React.ReactNode> = {
   home: <path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" />,
   classes: <path d="M4 6h16M4 12h16M4 18h10" />,
   students: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></>,
   people: <><circle cx="9" cy="9" r="3" /><circle cx="17" cy="10" r="2.4" /><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6M15 15c2.4-.3 4.6.9 5.3 3.6" /></>,
+  practice: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" /></>,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" /></>,
 }
 
@@ -41,7 +42,8 @@ export function SideNav({ items, root }: { items: NavItem[]; root: string }) {
               }`}
             >
               <span className={active ? 'text-teal-100' : ''}><Icon name={it.icon} /></span>
-              {it.label}
+              <span className="flex-1">{it.label}</span>
+              {it.badge ? <span className="rounded-full bg-brass px-2 text-xs font-bold text-navy-950">{it.badge}</span> : null}
             </Link>
           </li>
         )
@@ -52,6 +54,7 @@ export function SideNav({ items, root }: { items: NavItem[]; root: string }) {
 
 export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
   const path = usePathname()
+  items = items.filter((it) => it.icon !== 'settings')
   if (items.length < 2) return null
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
@@ -65,7 +68,10 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
                 aria-current={active ? 'page' : undefined}
                 className={`flex min-w-16 flex-col items-center gap-0.5 px-3 py-2 text-[0.7rem] font-semibold ${active ? 'text-teal-700' : 'text-faint'}`}
               >
-                <Icon name={it.icon} />
+                <span className="relative">
+                  <Icon name={it.icon} />
+                  {it.badge ? <span className="absolute -right-2.5 -top-1.5 min-w-4 rounded-full bg-brass px-1 text-center text-[0.6rem] leading-4 text-navy-950">{it.badge}</span> : null}
+                </span>
                 {it.label}
               </Link>
             </li>

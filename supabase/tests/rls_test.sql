@@ -21,6 +21,7 @@ declare
   c1 uuid; c2 uuid; cb1 uuid;     -- classes (t1 teaches c1; c2 has no teacher)
   s1 uuid; s2 uuid; s3 uuid; sb uuid;  -- students (s1, s2 in c1; s3 in c2)
   inv_token text;
+  hw uuid;
   n int;
   total int := 0;
   failed text[] := '{}';
@@ -130,6 +131,29 @@ begin
   total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, student_id, day, present, marked_by) values (%L, %L, current_date, true, %L)', cb, sb, t1)) > 0 then failed := array_append(failed, 'teacher marked attendance at other centre'::text); end if;
   total := total + 1; if pg_temp.cnt('select * from public.invites') <> 0 then failed := array_append(failed, 'teacher sees invite tokens'::text); end if;
   total := total + 1; if pg_temp.cnt('select * from public.activity_log') <> 0 then failed := array_append(failed, 'teacher reads activity log'::text); end if;
+
+  -- ===== homework and recordings =====
+  total := total + 1; if pg_temp.run(format('insert into public.homework (centre_id, class_id, title, created_by) values (%L, %L, %L, %L)', ca, c1, 'Iqra 4, pages 22-23', t1)) <> 1 then failed := array_append(failed, 'teacher cannot set homework for own class'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.homework (centre_id, class_id, title, created_by) values (%L, %L, %L, %L)', ca, c2, 'x', t1)) > 0 then failed := array_append(failed, 'teacher set homework for another class'::text); end if;
+  perform pg_temp.sign_out();
+  select id into hw from public.homework where class_id = c1 limit 1;
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.cnt('select * from public.homework') <> 1 then failed := array_append(failed, 'parent does not see child''s homework'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.submissions (centre_id, student_id, homework_id, audio_path, submitted_by) values (%L, %L, %L, %L, %L)', ca, s1, hw, ca || '/' || s1 || '/hw1.webm', p1)) <> 1 then failed := array_append(failed, 'parent cannot send child''s recording'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.submissions (centre_id, student_id, audio_path, submitted_by) values (%L, %L, %L, %L)', ca, s2, ca || '/' || s2 || '/hw2.webm', p1)) > 0 then failed := array_append(failed, 'parent sent recording for another child'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.submissions (centre_id, student_id, audio_path, submitted_by) values (%L, %L, %L, %L)', ca, s1, ca || '/' || s2 || '/hw3.webm', p1)) > 0 then failed := array_append(failed, 'submission points at another child''s audio'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.submissions (centre_id, student_id, audio_path, submitted_by, stars) values (%L, %L, %L, %L, 3)', ca, s1, ca || '/' || s1 || '/hw4.webm', p1)) > 0 then failed := array_append(failed, 'parent gave own recording stars'::text); end if;
+  total := total + 1; if pg_temp.run(format('update public.submissions set stars = 3 where student_id = %L', s1)) > 0 then failed := array_append(failed, 'parent edited teacher reply'::text); end if;
+  perform pg_temp.sign_in(o2);
+  total := total + 1; if pg_temp.cnt('select * from public.submissions') <> 0 then failed := array_append(failed, 'owner B sees recordings of A'::text); end if;
+  total := total + 1; if pg_temp.cnt('select * from public.homework') <> 0 then failed := array_append(failed, 'owner B sees homework of A'::text); end if;
+  perform pg_temp.sign_in(t1);
+  total := total + 1; if pg_temp.run(format('update public.submissions set stars = 3, verdict = %L, feedback = %L where student_id = %L', 'good', 'Bagus!', s1)) <> 1 then failed := array_append(failed, 'teacher cannot reply to recording'::text); end if;
+  total := total + 1; if pg_temp.run(format('update public.submissions set audio_path = %L where student_id = %L', ca || '/' || s1 || '/swap.webm', s1)) <> -1 then failed := array_append(failed, 'teacher changed recording audio'::text); end if;
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.cnt(format('select * from public.submissions where verdict = %L and reviewed_by = %L and reviewed_at is not null', 'good', t1)) <> 1 then failed := array_append(failed, 'parent cannot see teacher reply'::text); end if;
+  total := total + 1; if pg_temp.run(format('delete from public.submissions where student_id = %L', s1)) > 0 then failed := array_append(failed, 'parent deleted a recording the teacher replied to'::text); end if;
+  perform pg_temp.sign_in(t1);
 
   -- progress moved the student's book/page
   perform pg_temp.sign_in(p1);

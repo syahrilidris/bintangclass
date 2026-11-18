@@ -51,6 +51,7 @@ async function StaffHome({ slug }: { slug: string }) {
   const firstName = greetingName(myName)
 
   const setup = isManager && (classes.length === 0 || activeCount === 0 || teacherCount === 0)
+  const { count: waiting } = await supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
 
   return (
     <div className="grid gap-10">
@@ -58,6 +59,16 @@ async function StaffHome({ slug }: { slug: string }) {
         <p className="text-sm text-muted">{formatDay(today)}</p>
         <h1 className="page-title mt-1">Assalamualaikum{firstName ? `, ${firstName}` : ''}</h1>
       </header>
+
+      {waiting ? (
+        <Link href={`${root}/practice`} className="panel flex items-center justify-between gap-4 border-brass bg-brass-soft/40 px-5 py-4 hover:bg-brass-soft">
+          <span>
+            <span className="block font-semibold">{waiting} recording{waiting === 1 ? '' : 's'} to listen to</span>
+            <span className="text-sm text-muted">Sent from home by parents</span>
+          </span>
+          <span className="btn btn-primary">Listen</span>
+        </Link>
+      ) : null}
 
       {setup ? (
         <section className="panel p-6">
@@ -151,10 +162,12 @@ async function ParentHome({ slug }: { slug: string }) {
   const { supabase, centre, myName } = await getCentre(slug)
   const root = `/c/${slug}`
   const monthStart = todayMY().slice(0, 8) + '01'
-  const [{ data: kids }, { data: att }, { data: notes }] = await Promise.all([
-    supabase.from('students').select('id, full_name, book, page, classes(name)').eq('centre_id', centre.id).order('full_name'),
+  const [{ data: kids }, { data: att }, { data: notes }, { data: homework }, { data: subs }] = await Promise.all([
+    supabase.from('students').select('id, full_name, book, page, class_id, classes(name)').eq('centre_id', centre.id).order('full_name'),
     supabase.from('attendance').select('student_id, present').eq('centre_id', centre.id).gte('day', monthStart),
     supabase.from('progress').select('student_id, note, created_at').eq('centre_id', centre.id).not('note', 'is', null).order('created_at', { ascending: false }).limit(20),
+    supabase.from('homework').select('class_id, title, created_at').eq('centre_id', centre.id).order('created_at', { ascending: false }).limit(20),
+    supabase.from('submissions').select('student_id, created_at, reviewed_at, stars, verdict').eq('centre_id', centre.id).order('created_at', { ascending: false }).limit(20),
   ])
   const firstName = greetingName(myName)
 
@@ -174,9 +187,11 @@ async function ParentHome({ slug }: { slug: string }) {
             const mine = (att ?? []).filter((a) => a.student_id === k.id)
             const present = mine.filter((a) => a.present).length
             const note = (notes ?? []).find((n) => n.student_id === k.id)
+            const hw = (homework ?? []).find((h) => h.class_id === k.class_id)
+            const last = (subs ?? []).find((x) => x.student_id === k.id)
             return (
               <li key={k.id}>
-                <Link href={`${root}/students/${k.id}`} className="panel block p-6 transition-colors hover:border-navy-700">
+                <Link href={`${root}/students/${k.id}#practice`} className="panel block p-6 transition-colors hover:border-navy-700">
                   <div className="flex flex-wrap items-start justify-between gap-6">
                     <div>
                       <p className="text-lg font-bold">{k.full_name}</p>
@@ -189,6 +204,21 @@ async function ParentHome({ slug }: { slug: string }) {
                     <span><strong>{present}</strong> of {mine.length} classes attended this month</span>
                     {note ? <span className="text-muted">Teacher’s note: “{note.note}”</span> : null}
                   </div>
+                  {hw || last ? (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-paper px-4 py-3 text-sm">
+                      <span>
+                        {hw ? <><span className="font-semibold">Practice:</span> {hw.title}</> : 'Practice at home'}
+                        {last ? (
+                          <span className="block text-muted">
+                            {last.reviewed_at
+                              ? `Last recording: ${last.verdict === 'repeat' ? 'teacher asks to repeat' : 'teacher said good'}${last.stars ? `, ${last.stars} of 3 stars` : ''}`
+                              : 'Last recording sent, waiting for the teacher'}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="font-semibold text-teal-700">Record</span>
+                    </div>
+                  ) : null}
                 </Link>
               </li>
             )

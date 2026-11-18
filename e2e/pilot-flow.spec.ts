@@ -18,6 +18,16 @@ async function ready(page: Page) {
   await page.locator('html[data-hydrated]').waitFor({ state: 'attached' })
 }
 
+async function signIn(page: Page, email: string) {
+  await page.goto('/login')
+  await ready(page)
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password').fill(password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL(new RegExp(`/c/${slug}$`))
+  await ready(page)
+}
+
 async function shot(page: Page, name: string) {
   await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true })
 }
@@ -32,7 +42,10 @@ async function signUp(page: Page, who: { name: string; email: string }) {
 }
 
 async function newPerson(browser: Browser, mobile = false) {
-  const ctx = await browser.newContext(mobile ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } : {})
+  const ctx = await browser.newContext({
+    permissions: ['microphone'],
+    ...(mobile ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } : {}),
+  })
   return ctx.newPage()
 }
 
@@ -199,6 +212,13 @@ test('teacher marks attendance and records progress on a phone', async ({ browse
   await expect(page.getByText('Moved to Iqra 4, page 23.')).toBeVisible()
   await expect(page.getByText('Iqra 4, page 23').first()).toBeVisible()
   await shot(page, '11-teacher-student-mobile')
+
+  await page.goto(`/c/${slug}/classes`)
+  await ready(page)
+  await page.getByRole('link', { name: /Iqra Pagi/ }).click()
+  await page.getByLabel('What to practise at home').fill('Iqra 4, pages 23–24')
+  await page.getByRole('button', { name: 'Set practice' }).click()
+  await expect(page.getByText('Practice set.')).toBeVisible()
   await page.context().close()
 })
 
@@ -219,9 +239,22 @@ test('parent joins and sees only their own child', async ({ browser }) => {
   await expect(page.getByText('Muhammad Umar')).toHaveCount(0)
   await shot(page, '12-parent-home')
 
+  await expect(page.getByText('Iqra 4, pages 23–24').first()).toBeVisible()
   await page.getByText('Aisyah binti Rahman').click()
   await expect(page.getByRole('heading', { name: 'Record progress' })).toHaveCount(0)
+  await ready(page)
   await shot(page, '13-parent-child')
+
+  // Record practice at home with the (fake) microphone, listen back, send.
+  await page.getByRole('button', { name: 'Start recording' }).click()
+  await expect(page.getByText(/Recording 0:0/)).toBeVisible()
+  await page.waitForTimeout(2500)
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await expect(page.getByRole('button', { name: 'Send to teacher' })).toBeVisible()
+  await page.getByRole('button', { name: 'Send to teacher' }).click()
+  await expect(page.getByText('Sent. The teacher will listen and reply here.')).toBeVisible()
+  await expect(page.getByText('Waiting for the teacher to listen.')).toBeVisible()
+  await shot(page, '13b-parent-sent-recording')
 
   const res = await page.goto(umarUrl)
 
@@ -230,6 +263,34 @@ test('parent joins and sees only their own child', async ({ browser }) => {
   const people = await page.goto(`/c/${slug}/people`)
   await ready(page)
   expect(people?.status()).toBe(404)
+  await page.context().close()
+})
+
+test('teacher listens and replies', async ({ browser }) => {
+  const page = await newPerson(browser)
+  await signIn(page, teacher.email)
+  await expect(page.getByText('1 recording to listen to')).toBeVisible()
+  await page.getByRole('link', { name: 'Listen' }).click()
+  await expect(page.getByRole('heading', { name: 'Practice' })).toBeVisible()
+  await ready(page)
+  await expect(page.locator('audio')).toHaveCount(1)
+  await page.getByRole('radio', { name: '3 stars' }).click()
+  await page.getByRole('radio', { name: 'Good' }).click()
+  await page.getByPlaceholder(/Note for the parent/).fill('MasyaAllah, smooth reading. Keep the mad two counts long.')
+  await shot(page, '14a-teacher-practice-inbox')
+  await page.getByRole('button', { name: 'Send reply' }).click()
+  await expect(page.getByText('Reply sent.')).toBeVisible()
+  await page.context().close()
+})
+
+test('parent sees the teacher’s reply', async ({ browser }) => {
+  const page = await newPerson(browser, true)
+  await signIn(page, parent.email)
+  await expect(page.getByText(/teacher said good, 3 of 3 stars/)).toBeVisible()
+  await page.getByText('Aisyah binti Rahman').click()
+  await expect(page.getByText('Good', { exact: true })).toBeVisible()
+  await expect(page.getByText(/smooth reading/)).toBeVisible()
+  await shot(page, '14b-parent-reply-mobile')
   await page.context().close()
 })
 

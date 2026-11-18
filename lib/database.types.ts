@@ -65,6 +65,14 @@ export type Database = {
           { foreignKeyName: 'guardians_student_id_fkey'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
         ]
       }
+      homework: {
+        Row: { centre_id: string; class_id: string; created_at: string; created_by: string | null; due_on: string | null; id: string; title: string }
+        Insert: { centre_id: string; class_id: string; created_by?: string | null; due_on?: string | null; title: string }
+        Update: { due_on?: string | null; title?: string }
+        Relationships: [
+          { foreignKeyName: 'homework_class_id_fkey'; columns: ['class_id']; isOneToOne: false; referencedRelation: 'classes'; referencedColumns: ['id'] },
+        ]
+      }
       invites: {
         Row: { accepted_at: string | null; accepted_by: string | null; centre_id: string; created_at: string; created_by: string | null; email: string; expires_at: string; id: string; role: string; student_id: string | null; token: string }
         Insert: { centre_id: string; email: string; role: string; student_id?: string | null }
@@ -93,6 +101,15 @@ export type Database = {
         Update: { book?: string; note?: string | null; page?: number }
         Relationships: [
           { foreignKeyName: 'progress_student_id_fkey'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
+        ]
+      }
+      submissions: {
+        Row: { audio_path: string; centre_id: string; created_at: string; duration_s: number | null; feedback: string | null; homework_id: string | null; id: string; reviewed_at: string | null; reviewed_by: string | null; stars: number | null; student_id: string; submitted_by: string | null; verdict: string | null }
+        Insert: { audio_path: string; centre_id: string; duration_s?: number | null; homework_id?: string | null; student_id: string; submitted_by?: string | null }
+        Update: { feedback?: string | null; stars?: number | null; verdict?: string | null }
+        Relationships: [
+          { foreignKeyName: 'submissions_student_id_fkey'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
+          { foreignKeyName: 'submissions_homework_id_fkey'; columns: ['homework_id']; isOneToOne: false; referencedRelation: 'homework'; referencedColumns: ['id'] },
         ]
       }
       students: {

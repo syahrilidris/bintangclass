@@ -30,7 +30,7 @@ jobs:
           version: 3.2.0
 
       - name: Start local Supabase
-        run: supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase start -x realtime,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
       - name: Point the app at local Supabase
         run: |

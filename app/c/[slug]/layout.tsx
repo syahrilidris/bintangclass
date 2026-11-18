@@ -14,11 +14,17 @@ export default async function CentreLayout({ children, params }: { children: Rea
   const { centre, role, myName, user, isManager, isStaff, supabase } = await getCentre(slug)
   const root = `/c/${slug}`
 
+  const { count: waiting } = isStaff
+    ? await supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
+    : { count: 0 }
+  const practice: NavItem = { href: `${root}/practice`, label: 'Practice', icon: 'practice', badge: waiting ?? 0 }
+
   const items: NavItem[] = isManager
     ? [
         { href: root, label: 'Today', icon: 'home' },
         { href: `${root}/classes`, label: 'Classes', icon: 'classes' },
         { href: `${root}/students`, label: 'Students', icon: 'students' },
+        practice,
         { href: `${root}/people`, label: 'People', icon: 'people' },
         ...(role === 'owner' ? [{ href: `${root}/settings`, label: 'Settings', icon: 'settings' } as NavItem] : []),
       ]
@@ -27,6 +33,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
           { href: root, label: 'Today', icon: 'home' },
           { href: `${root}/classes`, label: 'My classes', icon: 'classes' },
           { href: `${root}/students`, label: 'My students', icon: 'students' },
+          practice,
         ]
       : [{ href: root, label: 'My children', icon: 'students' }]
 
@@ -61,7 +68,9 @@ export default async function CentreLayout({ children, params }: { children: Rea
             <Star size={22} fill="var(--color-brass)" />
             <span className="truncate font-semibold text-white">{centre.name}</span>
           </Link>
-          {manyCentres ? (
+          {role === 'owner' ? (
+            <Link href={`${root}/settings`} className="shrink-0 text-xs font-semibold text-teal-100">Settings</Link>
+          ) : manyCentres ? (
             <Link href="/app" className="shrink-0 text-xs font-semibold text-teal-100">Switch</Link>
           ) : (
             <form action="/auth/signout" method="post"><button className="text-xs text-white/60">Sign out</button></form>
