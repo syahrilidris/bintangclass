@@ -35,7 +35,8 @@ export default async function CentreLayout({ children, params }: { children: Rea
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-dvh flex-col bg-navy-900 px-4 py-6 lg:flex">
+      <div className="hidden bg-navy-900 lg:block">
+      <aside className="sticky top-0 flex h-dvh flex-col px-4 py-6">
         <Link href={root} className="px-2"><Logo light /></Link>
         <div className="mt-8 rounded-lg bg-navy-950/60 px-3 py-3">
           <p className="truncate font-semibold text-white">{centre.name}</p>
@@ -52,6 +53,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
           </form>
         </div>
       </aside>
+      </div>
 
       <div className="min-w-0">
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 bg-navy-900 px-5 py-3 lg:hidden">

@@ -41,7 +41,7 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="grid gap-10">
-      <header className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <header className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           {isStaff ? <Link href={`${root}/students`} className="text-sm text-muted hover:text-ink">Students</Link> : <Link href={root} className="text-sm text-muted hover:text-ink">My children</Link>}
           <h1 className="page-title mt-1">{s.full_name}</h1>
