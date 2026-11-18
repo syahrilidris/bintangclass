@@ -1,0 +1,37 @@
+# Centre isolation test (product plan: "an automated test signs in as Centre A and tries to read
+# Centre B on every release; any leak blocks the deploy").
+#
+# Starts a throwaway Supabase locally, applies every migration in supabase/migrations, then runs
+# supabase/tests/rls_test.sql as each role. No secrets and no production data are involved.
+# To make it block deploys: GitHub → Settings → Branches → protect `main` → require this check.
+name: Database isolation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  rls:
+    name: RLS tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase and apply migrations
+        run: supabase start
+
+      - name: Run isolation tests
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" \
+            -f supabase/tests/rls_test.sql 2>&1 | tee rls.out
+          grep -q "RLS TESTS PASSED" rls.out
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup

@@ -18,8 +18,8 @@ declare
   o2 uuid := gen_random_uuid();  -- owner, centre B
   pa uuid := gen_random_uuid();  -- platform admin
   ca uuid; cb uuid;               -- centres
-  c1 uuid; cb1 uuid;              -- classes
-  s1 uuid; s2 uuid; sb uuid;      -- students
+  c1 uuid; c2 uuid; cb1 uuid;     -- classes (t1 teaches c1; c2 has no teacher)
+  s1 uuid; s2 uuid; s3 uuid; sb uuid;  -- students (s1, s2 in c1; s3 in c2)
   inv_token text;
   n int;
   total int := 0;
@@ -71,6 +71,8 @@ begin
   insert into public.classes (centre_id, name, teacher_id) values (ca, 'Iqra Pagi', t1) returning id into c1;
   insert into public.students (centre_id, full_name, class_id) values (ca, 'Aisyah', c1) returning id into s1;
   insert into public.students (centre_id, full_name, class_id) values (ca, 'Umar', c1) returning id into s2;
+  insert into public.classes (centre_id, name) values (ca, 'Tahfiz Petang') returning id into c2;
+  insert into public.students (centre_id, full_name, class_id) values (ca, 'Ali', c2) returning id into s3;
   insert into public.guardians (centre_id, student_id, user_id) values (ca, s1, p1);
 
   perform pg_temp.sign_in(o2);
@@ -95,6 +97,7 @@ begin
   total := total + 1; if pg_temp.run(format('insert into public.students (centre_id, full_name) values (%L, %L)', ca, 'Intruder')) > 0 then failed := array_append(failed, 'owner B inserted student into A'::text); end if;
   total := total + 1; if pg_temp.run(format('update public.students set full_name = %L where centre_id = %L', 'Hacked', ca)) > 0 then failed := array_append(failed, 'owner B updated students of A'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.students (centre_id, full_name, class_id) values (%L, %L, %L)', cb, 'Mixed', c1)) > 0 then failed := array_append(failed, 'student in B linked to class of A'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.activity_log where centre_id = %L', ca)) <> 0 then failed := array_append(failed, 'owner B reads activity log of A'::text); end if;
 
   -- ===== parents =====
   perform pg_temp.sign_in(p1);
@@ -105,18 +108,28 @@ begin
   total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, student_id, day, present, marked_by) values (%L, %L, current_date, true, %L)', ca, s1, p1)) > 0 then failed := array_append(failed, 'parent marked attendance'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.guardians (centre_id, student_id, user_id) values (%L, %L, %L)', ca, s2, p1)) > 0 then failed := array_append(failed, 'parent linked self to another child'::text); end if;
 
+  -- recordings: recordings/<centre>/<student>/<file>
+  total := total + 1; if pg_temp.run(format('insert into storage.objects (bucket_id, name, owner_id) values (%L, %L, %L)', 'recordings', ca || '/' || s1 || '/iqra-p5.webm', p1)) <> 1 then failed := array_append(failed, 'parent cannot upload own child''s recording'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into storage.objects (bucket_id, name, owner_id) values (%L, %L, %L)', 'recordings', ca || '/' || s2 || '/x.webm', p1)) > 0 then failed := array_append(failed, 'parent uploaded to another child''s folder'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into storage.objects (bucket_id, name, owner_id) values (%L, %L, %L)', 'recordings', cb || '/' || s1 || '/x.webm', p1)) > 0 then failed := array_append(failed, 'recording filed under another centre'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into storage.objects (bucket_id, name, owner_id) values (%L, %L, %L)', 'recordings', ca || '/x.webm', p1)) > 0 then failed := array_append(failed, 'recording accepted with malformed path'::text); end if;
   perform pg_temp.sign_in(p2);
   total := total + 1; if pg_temp.cnt('select * from public.students') <> 0 then failed := array_append(failed, 'unlinked parent sees students'::text); end if;
 
   -- ===== teachers =====
   perform pg_temp.sign_in(t1);
-  total := total + 1; if pg_temp.cnt(format('select * from public.students where centre_id = %L', ca)) <> 2 then failed := array_append(failed, 'teacher cannot see centre students'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.students where centre_id = %L', ca)) <> 2 then failed := array_append(failed, 'teacher does not see exactly own class'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.students where id = %L', s3)) <> 0 then failed := array_append(failed, 'teacher sees student outside own classes'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, student_id, day, present, marked_by) values (%L, %L, current_date, true, %L)', ca, s3, t1)) > 0 then failed := array_append(failed, 'teacher marked attendance outside own classes'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from storage.objects where bucket_id = %L and name like %L', 'recordings', ca || '/' || s1 || '/%')) <> 1 then failed := array_append(failed, 'teacher cannot hear own student''s recording'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into storage.objects (bucket_id, name, owner_id) values (%L, %L, %L)', 'recordings', ca || '/' || s3 || '/x.webm', t1)) > 0 then failed := array_append(failed, 'teacher uploaded for student outside own classes'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, class_id, student_id, day, present, marked_by) values (%L, %L, %L, current_date, true, %L)', ca, c1, s1, t1)) <> 1 then failed := array_append(failed, 'teacher cannot mark attendance'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, student_id, day, present, marked_by) values (%L, %L, current_date, true, %L)', ca, s2, o1)) > 0 then failed := array_append(failed, 'teacher marked attendance in someone else''s name'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.progress (centre_id, student_id, book, page, by_user) values (%L, %L, %L, 5, %L)', ca, s1, 'Iqra 1', t1)) <> 1 then failed := array_append(failed, 'teacher cannot record progress'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.students (centre_id, full_name) values (%L, %L)', ca, 'New')) > 0 then failed := array_append(failed, 'teacher added student'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.attendance (centre_id, student_id, day, present, marked_by) values (%L, %L, current_date, true, %L)', cb, sb, t1)) > 0 then failed := array_append(failed, 'teacher marked attendance at other centre'::text); end if;
   total := total + 1; if pg_temp.cnt('select * from public.invites') <> 0 then failed := array_append(failed, 'teacher sees invite tokens'::text); end if;
+  total := total + 1; if pg_temp.cnt('select * from public.activity_log') <> 0 then failed := array_append(failed, 'teacher reads activity log'::text); end if;
 
   -- progress moved the student's book/page
   perform pg_temp.sign_in(p1);
@@ -140,6 +153,10 @@ begin
   total := total + 1; if pg_temp.run(format('insert into public.guardians (centre_id, student_id, user_id) values (%L, %L, %L)', ca, s2, x)) > 0 then failed := array_append(failed, 'owner linked a non-member as guardian'::text); end if;
   total := total + 1; if pg_temp.run(format('insert into public.invites (centre_id, email, role, student_id) values (%L, %L, %L, %L)', ca, 'p@test.bintang', 'parent', sb)) > 0 then failed := array_append(failed, 'invite linked to other centre''s student'::text); end if;
   total := total + 1; if pg_temp.cnt('select * from public.crm_accounts') <> 0 then failed := array_append(failed, 'owner sees CRM'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.activity_log where centre_id = %L and table_name = %L and actor = %L', ca, 'students', o1)) < 3 then failed := array_append(failed, 'activity log missing student changes'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.activity_log where centre_id = %L and changes ? %L', ca, 'token')) <> 0 then failed := array_append(failed, 'invite token copied into activity log'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from storage.objects where bucket_id = %L and name like %L', 'recordings', ca || '/%')) <> 1 then failed := array_append(failed, 'owner cannot hear centre recordings'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.activity_log (centre_id, action, table_name) values (%L, %L, %L)', ca, 'insert', 'fake')) > 0 then failed := array_append(failed, 'activity log writable through API'::text); end if;
 
   -- removing a parent from the centre also removes their access to the child
   total := total + 1; if pg_temp.run(format('delete from public.memberships where centre_id = %L and user_id = %L', ca, p1)) <> 1 then failed := array_append(failed, 'owner cannot remove parent'::text); end if;
@@ -163,6 +180,10 @@ begin
   total := total + 1; if pg_temp.cnt(format('select * from public.centres where id in (%L, %L)', ca, cb)) <> 2 then failed := array_append(failed, 'platform admin cannot see centres'::text); end if;
   total := total + 1; if pg_temp.cnt(format('select * from public.crm_accounts where centre_id in (%L, %L)', ca, cb)) <> 2 then failed := array_append(failed, 'sign-ups missing from CRM'::text); end if;
   total := total + 1; if pg_temp.cnt(format('select * from public.students where centre_id = %L', ca)) <> 0 then failed := array_append(failed, 'platform admin reads children''s records'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from storage.objects where bucket_id = %L', 'recordings')) <> 0 then failed := array_append(failed, 'platform admin hears children''s recordings'::text); end if;
+  perform pg_temp.sign_in(x);
+  total := total + 1; if pg_temp.cnt(format('select * from storage.objects where bucket_id = %L', 'recordings')) <> 0 then failed := array_append(failed, 'outsider hears recordings'::text); end if;
+  perform pg_temp.sign_in(pa);
   total := total + 1; if pg_temp.run(format('update public.centres set status = %L where id = %L', 'read_only', ca)) <> 1 then failed := array_append(failed, 'platform admin cannot suspend centre'::text); end if;
 
   perform pg_temp.sign_in(o1);

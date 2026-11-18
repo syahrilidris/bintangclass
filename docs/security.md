@@ -8,11 +8,11 @@ the publishable key, so **RLS is the security boundary** — not the Next.js app
 
 | Role | Who | Can see | Can change |
 |---|---|---|---|
-| **owner** | Centre founder (one per centre, set by `create_centre`) | Everything in their centre | Centre details, admins, everything an admin can |
-| **admin** | Office staff | Everything in their centre | Teachers, parents, classes, students, guardians, invites |
-| **teacher** | Ustaz / ustazah | All students, classes, attendance, progress, staff list | Attendance and progress, always in their own name |
-| **parent** | Guardian | Only their own children, their attendance and progress | Nothing (read-only) |
-| **platform admin** | Bintang Class team (`platform_admins` table, added by service role only) | All centres, CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records.** |
+| **owner** | Centre founder (one per centre, set by `create_centre`) | Everything in their centre, including the activity log | Centre details, admins, everything an admin can |
+| **admin** | Office staff | Everything in their centre, including the activity log | Teachers, parents, classes, students, guardians, invites |
+| **teacher** | Ustaz / ustazah | Students in classes they teach, with their attendance, progress and recordings; the class list and staff list | Attendance, progress and recordings for those students, always in their own name |
+| **parent** | Guardian | Only their own children, their attendance, progress and recordings | Upload their own child's practice recordings |
+| **platform admin** | Bintang Class team (`platform_admins` table, added by service role only) | All centres, CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records, recordings or the activity log.** |
 
 A person can hold different roles in different centres.
 
@@ -24,6 +24,8 @@ A person can hold different roles in different centres.
 - **Admins are owner-managed:** only the owner can add, invite, change or remove admins. Nobody can modify the owner row through the API.
 - **Integrity:** a student, class, guardian link, attendance mark, progress entry or invite can never point across centres (trigger `private.same_centre_check`). A guardian must be a member of the centre.
 - **No impersonation:** `attendance.marked_by` and `progress.by_user` must equal the signed-in user (they default to it).
+- **Recordings:** private bucket `recordings`, path `<centre_id>/<student_id>/<file>`. The path must match a real student of that centre; read and upload follow the same rules as the student's record. Files are never overwritten (no update policy). Owners/admins can delete any recording in their centre; others only their own uploads. Audio only, 15 MB max.
+- **Activity log:** inserts, updates and deletes on centres, memberships, classes, students, guardians and invites are written to `activity_log` with who did it and which fields changed. Only the trigger can write; only the centre's owner and admins can read. Invite tokens are stripped. Attendance and progress aren't logged because each row already records who wrote it.
 - **Clean exits:** removing someone from a centre deletes their guardian links and unassigns them from classes, so a removed parent loses access to their child immediately. Members can leave a centre themselves (except the owner).
 - **Invites:** single-use, 14-day expiry, bound to an email address. Accepting an invite upgrades an existing role (parent → teacher) but never downgrades.
 
@@ -40,11 +42,16 @@ Helper functions live in the `private` schema (not exposed over the API).
 ## Testing
 
 `supabase/tests/rls_test.sql` signs in as owner, admin, teacher, two parents, an outsider, a second
-centre's owner, a platform admin and a signed-out visitor, and runs 52 checks. It always rolls back.
+centre's owner, a platform admin and a signed-out visitor, and runs 68 checks across tables and
+recordings. It always rolls back.
+
+GitHub Actions (`.github/workflows/db-isolation.yml`) runs it on every pull request and every push to
+`main` against a fresh local Supabase built from the migrations. Make it a required check on `main`
+so a leak blocks the merge, and so the deploy.
 
 ```sh
 psql "$DATABASE_URL" -f supabase/tests/rls_test.sql 2>&1 | grep "RLS TESTS"
-# RLS TESTS PASSED: 52/52
+# RLS TESTS PASSED: 68/68
 ```
 
 Run it after every migration that touches tables or policies.
@@ -60,6 +67,6 @@ Run it after every migration that touches tables or policies.
 
 ## Known decisions to revisit
 
-- Teachers can mark attendance for any class in their centre, not only their own. Tighten if centres ask.
 - Owner transfer is not built yet (needs a platform-admin or service-role action).
 - Progress entries are append-only; corrections are made by adding a new entry.
+- Still to build from the plan: centre data export and centre deletion (PDPA), and owner-approved support access for the platform admin.

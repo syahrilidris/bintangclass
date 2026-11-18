@@ -10,19 +10,25 @@ and a platform admin with a light CRM.
 
 ```
 supabase/
+  config.toml   local Supabase (used by CI)
   migrations/   schema, roles and Row Level Security, applied in order
-  tests/        rls_test.sql — signs in as every role and checks isolation (52 checks)
+  tests/        rls_test.sql — signs in as every role and checks isolation (68 checks)
 docs/
   security.md   tenancy model, role matrix, rules for new tables
+.github/workflows/db-isolation.yml   runs the isolation tests on every PR and push to main
 ```
+
+Product plan: [Mengaji Class App: Product Plan](https://claude.ai/artifact/LmiRNukVYUibXroL5u5xuM)
 
 ## Status
 
-- [x] Week 1 — centres, roles, database security
-- [ ] App shell: sign-in, create centre, invite + accept, role-aware navigation
-- [ ] Classes, students, attendance, progress
-- [ ] Parent view
-- [ ] Billing and platform admin CRM
+Following the product plan's build order:
+
+- [x] **Phase 0, week 1** — tenants, roles, Row Level Security, recordings storage, activity log, isolation test in CI
+- [ ] Phase 0 — name and domain, recruit 3 pilot centres (owner actions)
+- [ ] **Phase 1, weeks 2–5 (free pilot)** — classes and students, levels, attendance, homework recordings, parent view
+- [ ] **Phase 2, weeks 6–9** — fees and payments, monthly reports, centre plan goes live
+- [ ] **Phase 3, weeks 10–14** — paid ustaz checks, payouts, ratings
 
 ## Database
 
