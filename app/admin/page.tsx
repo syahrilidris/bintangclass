@@ -47,13 +47,13 @@ export default async function PlatformOverview() {
   const days = (daily ?? []).map((d) => d.day)
 
   return (
-    <div className="grid gap-10">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-8 md:gap-10">
       <header>
         <h1 className="page-title">All centres</h1>
         <p className="mt-1 text-muted">Numbers across every centre. Children’s names and recordings stay private to each centre.</p>
       </header>
 
-      <section aria-label="Headline numbers" className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Headline numbers" className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line shadow-[var(--shadow-card)] lg:grid-cols-4">
         {[
           { label: 'Centres', value: all.length.toString(), sub: `${usedWeekly} used in the last 14 days` },
           { label: 'Active students', value: students.toLocaleString('en-MY'), sub: plural(all.reduce((a, c) => a + c.parents, 0), 'parent') + ', ' + plural(all.reduce((a, c) => a + c.teachers, 0), 'staff member') },
@@ -68,9 +68,9 @@ export default async function PlatformOverview() {
             sub: `${replied} of ${plural(recs, 'recording')} answered, 30 days`,
           },
         ].map((k) => (
-          <div key={k.label} className="bg-surface px-5 py-5">
-            <p className="text-sm text-muted">{k.label}</p>
-            <p className="mt-1 text-[1.9rem] font-bold leading-tight text-strong">{k.value}</p>
+          <div key={k.label} className="bg-surface px-4 py-4 sm:px-5 sm:py-5">
+            <p className="text-xs text-muted sm:text-sm">{k.label}</p>
+            <p className="mt-1 text-[1.45rem] font-bold leading-tight text-strong sm:text-[1.9rem]">{k.value}</p>
             <p className="mt-1 text-xs text-muted">{k.sub}</p>
           </div>
         ))}
@@ -81,7 +81,7 @@ export default async function PlatformOverview() {
           <h2 className="section-title">Last 30 days</h2>
           <span className="text-sm text-muted">Attendance rate {pct(present, att) ?? '–'}%</span>
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="-mx-5 mt-4 flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0 [&>*]:w-[82%] [&>*]:shrink-0 [&>*]:snap-start md:[&>*]:w-auto">
           <ActivityChart title="Attendance marked" unit="marks" days={days} values={(daily ?? []).map((d) => d.attendance)} />
           <ActivityChart title="Recordings sent" unit="recordings" days={days} values={(daily ?? []).map((d) => d.recordings)} />
           <ActivityChart title="New centres" unit="sign-ups" days={days} values={(daily ?? []).map((d) => d.signups)} />
@@ -110,7 +110,7 @@ export default async function PlatformOverview() {
         {all.length === 0 ? (
           <p className="panel mt-4 p-6 text-muted">No centres yet. When an owner signs up, their centre appears here and in the CRM.</p>
         ) : (
-          <div className="panel mt-4 overflow-x-auto">
+          <div className="panel mt-4 hidden overflow-x-auto md:block">
             <table className="w-full min-w-[52rem] text-left text-sm">
               <thead className="border-b border-line text-xs text-muted">
                 <tr>
@@ -155,6 +155,45 @@ export default async function PlatformOverview() {
             </table>
           </div>
         )}
+        {all.length ? (
+          <ul className="mt-4 grid gap-3 md:hidden">
+            {withHealth.map((c) => (
+              <li key={c.centre_id}>
+                <Link href={`/admin/centres/${c.centre_id}`} className="panel block p-4 active:scale-[0.99]">
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block font-semibold leading-snug">{c.name}</span>
+                      <span className="block truncate text-xs text-muted">{[c.owner_name, c.city].filter(Boolean).join(', ') || 'No owner name yet'}</span>
+                    </span>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${HEALTH_STYLE[c.h]}`}>{HEALTH_LABEL[c.h]}</span>
+                  </span>
+                  <span className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <span className="rounded-lg bg-paper px-2 py-2">
+                      <span className="block font-bold tabular-nums text-strong">{c.active_students}</span>
+                      <span className="text-[0.7rem] text-muted">students</span>
+                    </span>
+                    <span className="rounded-lg bg-paper px-2 py-2">
+                      <span className="block font-bold tabular-nums text-strong">{c.attendance_30d ? `${pct(c.present_30d, c.attendance_30d)}%` : '–'}</span>
+                      <span className="text-[0.7rem] text-muted">attendance</span>
+                    </span>
+                    <span className="rounded-lg bg-paper px-2 py-2">
+                      <span className="block font-bold tabular-nums text-strong">{c.recordings_30d}</span>
+                      <span className="text-[0.7rem] text-muted">recordings</span>
+                    </span>
+                  </span>
+                  <span className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted">
+                    <span>
+                      {c.plan === 'centre' ? 'Paid' : 'Free'}
+                      {c.status !== 'active' ? <span className="text-danger">, {c.status === 'read_only' ? 'Read-only' : 'Closed'}</span> : null}
+                      {c.stage ? `, ${STAGE_LABEL[c.stage]}` : ''}
+                    </span>
+                    <span>Active {ago(c.last_activity)}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
     </div>
   )

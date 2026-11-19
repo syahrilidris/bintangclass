@@ -77,6 +77,22 @@ test('platform admin sees every centre’s numbers, and manages plan and CRM', a
   await expect(page.getByLabel('Status')).toHaveValue('active')
   await page.screenshot({ path: `${shots}/31-platform-centre.png`, fullPage: true })
 
+  // On a phone: tab bar instead of header links, cards instead of the wide table
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({ path: `${shots}/35-platform-centre-mobile.png`, fullPage: true })
+  await page.goto('/admin')
+  await ready(page)
+  const tabs = page.getByRole('navigation', { name: 'Platform' })
+  await expect(tabs.getByRole('link', { name: 'Leads' })).toBeVisible()
+  await expect(page.getByRole('table')).toBeHidden()
+  await expect(page.getByRole('link', { name: /Kelas Mengaji Nurul Iman/ }).first()).toBeVisible()
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(overflow).toBeLessThanOrEqual(0)
+  await page.screenshot({ path: `${shots}/34-platform-overview-mobile.png`, fullPage: true })
+  await tabs.getByRole('link', { name: 'Leads' }).click()
+  await expect(page).toHaveURL(/\/admin\/leads$/)
+  await page.setViewportSize({ width: 1366, height: 860 })
+
   await page.goto('/admin/leads')
   await ready(page)
   await page.getByLabel('Centre name').fill('Pusat Tahfiz Al-Amin')
