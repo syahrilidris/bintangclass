@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ITEMS = [
@@ -52,11 +52,11 @@ export function AdminTabBar() {
                 aria-current={on ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[0.7rem] font-semibold ${on ? 'text-teal-700' : 'text-faint hover:text-muted'}`}
               >
-                <span className={`flex h-8 w-14 items-center justify-center rounded-full ${on ? 'bg-teal-50' : ''}`}>
+                <TabPill active={on}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     {it.icon}
                   </svg>
-                </span>
+                </TabPill>
                 {it.label}
               </Link>
             </li>
@@ -64,5 +64,14 @@ export function AdminTabBar() {
         })}
       </ul>
     </nav>
+  )
+}
+
+function TabPill({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const { pending } = useLinkStatus()
+  return (
+    <span className={`flex h-8 w-14 items-center justify-center rounded-full transition-colors ${active || pending ? 'bg-teal-50 text-teal-700' : ''} ${pending ? 'animate-pulse' : ''}`}>
+      {children}
+    </span>
   )
 }

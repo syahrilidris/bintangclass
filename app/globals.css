@@ -88,6 +88,12 @@
   --shadow-float: 0 10px 30px -10px rgb(0 0 0 / 0.7);
 }
 
+@keyframes navbar {
+  0% { width: 0; }
+  30% { width: 55%; }
+  100% { width: 88%; }
+}
+
 @layer base {
   html {
     color: var(--color-ink);
