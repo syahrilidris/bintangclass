@@ -385,7 +385,8 @@ test('parent records practice with no signal; it sends when back online; sign-ou
   await signIn(page, parent.email)
   await controlled(page)
   await page.getByText('Aisyah binti Rahman').click()
-  await ready(page)
+  await expect(page).toHaveURL(/\/students\//)
+  await expect(page.getByRole('button', { name: 'Start recording' })).toBeVisible()
   const before = await page.locator('audio').count()
 
   await page.context().setOffline(true)
