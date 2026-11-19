@@ -26,6 +26,7 @@ export function AdminTopNav() {
           <Link
             key={it.href}
             href={it.href}
+            prefetch
             aria-current={on ? 'page' : undefined}
             className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${on ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white'}`}
           >
@@ -49,6 +50,7 @@ export function AdminTabBar() {
             <li key={it.href} className="flex-1">
               <Link
                 href={it.href}
+                prefetch
                 aria-current={on ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[0.7rem] font-semibold ${on ? 'text-teal-700' : 'text-faint hover:text-muted'}`}
               >

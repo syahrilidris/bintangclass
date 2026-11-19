@@ -2,6 +2,8 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Tabs are prefetched in full; keep those copies for 30 seconds so switching is instant but never stale for long.
+  experimental: { staleTimes: { dynamic: 0, static: 30 } },
   async headers() {
     return [
       {

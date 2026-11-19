@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { PullToRefresh } from '@/components/pull-refresh'
+import { SignOutButton } from '@/components/offline'
 import { requirePlatformAdmin } from '@/lib/platform'
 import { Logo, Star } from '@/components/star'
 import { ThemeSwitch } from '@/components/theme'
@@ -31,9 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <div className="absolute right-0 z-30 mt-2 w-60 rounded-xl border border-line bg-raised p-2 text-ink shadow-[var(--shadow-float)]">
                 <p className="truncate px-3 py-2 text-sm text-muted">{user.email}</p>
                 {mine ? <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Centres you belong to</Link> : null}
-                <form action="/auth/signout" method="post">
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft">Sign out</button>
-                </form>
+                <SignOutButton className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft" label="Sign out" />
               </div>
             </details>
           </div>
@@ -43,6 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <main className="mx-auto max-w-6xl px-5 pb-28 pt-6 md:pb-16 md:pt-8 lg:px-10">{children}</main>
       </div>
       <AdminTabBar />
+      <PullToRefresh />
     </div>
   )
 }

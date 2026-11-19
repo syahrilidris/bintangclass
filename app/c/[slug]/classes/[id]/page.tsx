@@ -80,7 +80,7 @@ export default async function ClassPage({
               {isManager ? <Link href={`${root}/students`} className="link">Add students</Link> : null}
             </p>
           ) : (
-            <Attendance key={day} slug={slug} classId={id} day={day} rows={rows} canMark={canMark} />
+            <Attendance key={day} slug={slug} centreId={centre.id} classId={id} day={day} rows={rows} canMark={canMark} />
           )}
         </div>
       </section>
