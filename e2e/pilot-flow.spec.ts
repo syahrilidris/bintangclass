@@ -308,14 +308,15 @@ test('owner sees the day at a glance', async () => {
   await shot(page, '14-owner-today')
 
   // On a slow connection, tapping a link shows the next page's outline straight away
-  await page.route(/\/students(\?|$)/, async (route) => {
+  // (tabs are loaded in advance, so use a class link, which isn't)
+  await page.route(/\/classes\/[0-9a-f-]{36}/, async (route) => {
     if (route.request().headers()['rsc']) await new Promise((r) => setTimeout(r, 1500))
     await route.continue()
   })
-  await page.getByRole('link', { name: 'Students', exact: true }).first().click()
+  await page.getByRole('link', { name: /Iqra Pagi/ }).first().click()
   await expect(page.getByLabel('Loading')).toBeVisible()
   await shot(page, '14c-loading-outline')
-  await expect(page.getByRole('heading', { name: 'Students' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Iqra Pagi' })).toBeVisible()
   await expect(page.getByLabel('Loading')).toHaveCount(0)
   await page.unrouteAll()
   await page.goto(`/c/${slug}/people`)
