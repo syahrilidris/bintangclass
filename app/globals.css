@@ -108,6 +108,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
+    overflow-x: clip; /* page slide-in never causes sideways scroll */
     font-family: var(--font-sans);
     font-size: 15px;
     line-height: 1.55;

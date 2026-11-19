@@ -71,9 +71,10 @@ export function onQueueChange(fn: () => void) {
   return () => window.removeEventListener(EVENT, fn)
 }
 
+/** Who is signed in on this phone, read from the stored session (works with no signal). */
 async function myId(): Promise<string> {
-  const { data } = await createClient().auth.getClaims()
-  return data?.claims?.sub ?? ''
+  const { data } = await createClient().auth.getSession()
+  return data.session?.user.id ?? ''
 }
 
 export async function queueMark(m: Omit<QueuedMark, 'key' | 'at' | 'uid'>) {
@@ -124,8 +125,7 @@ async function doFlush(): Promise<{ sent: number; failed: string[] }> {
   const out = { sent: 0, failed: [] as string[] }
   if (!navigator.onLine) return out
   const supabase = createClient()
-  const { data } = await supabase.auth.getClaims()
-  const uid = data?.claims?.sub
+  const uid = await myId()
   if (!uid) return out
 
   // Only send what this person saved; someone else's waits for them (or is wiped when they sign out).
