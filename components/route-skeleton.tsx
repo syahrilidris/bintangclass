@@ -13,7 +13,7 @@ function shapeFor(path: string): Shape {
   return 'detail'
 }
 
-const bar = 'animate-pulse rounded-md bg-line/70'
+const bar = 'animate-pulse bg-line/70'
 const card = 'panel'
 
 /**
@@ -60,23 +60,23 @@ export function RouteSkeleton() {
               {[0, 1, 2, 3].map((i) => (
                 <div key={i} className={`${card} grid gap-3 p-4`}>
                   <div className={`h-10 w-10 rounded-xl ${bar}`} />
-                  <div className={`h-3.5 w-3/4 ${bar}`} />
-                  <div className={`h-3 w-1/2 ${bar}`} />
+                  <div className={`h-3.5 w-3/4 rounded-md ${bar}`} />
+                  <div className={`h-3 w-1/2 rounded-md ${bar}`} />
                 </div>
               ))}
             </div>
           </>
         ) : (
           <div className="grid gap-2">
-            <div className={`h-3.5 w-20 ${bar}`} />
-            <div className={`h-7 w-56 ${bar}`} />
-            <div className={`h-3.5 w-40 ${bar}`} />
+            <div className={`h-3.5 w-20 rounded-md ${bar}`} />
+            <div className={`h-7 w-56 rounded-md ${bar}`} />
+            <div className={`h-3.5 w-40 rounded-md ${bar}`} />
           </div>
         )}
         {shape === 'detail' ? (
           <div className={`${card} grid gap-3 p-6`}>
-            <div className={`h-3.5 w-24 ${bar}`} />
-            <div className={`h-6 w-40 ${bar}`} />
+            <div className={`h-3.5 w-24 rounded-md ${bar}`} />
+            <div className={`h-6 w-40 rounded-md ${bar}`} />
             <div className="flex gap-2">
               {[0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className={`h-7 w-7 rounded-full ${bar}`} />)}
             </div>
@@ -87,8 +87,8 @@ export function RouteSkeleton() {
             <div key={i} className="flex items-center gap-4 px-5 py-4">
               <div className={`h-9 w-9 shrink-0 rounded-full ${bar}`} />
               <div className="grid flex-1 gap-2">
-                <div className={`h-3.5 ${i % 2 ? 'w-1/3' : 'w-2/5'} ${bar}`} />
-                <div className={`h-3 ${i % 2 ? 'w-1/2' : 'w-3/5'} ${bar}`} />
+                <div className={`h-3.5 ${i % 2 ? 'w-1/3' : 'w-2/5'} rounded-md ${bar}`} />
+                <div className={`h-3 ${i % 2 ? 'w-1/2' : 'w-3/5'} rounded-md ${bar}`} />
               </div>
               <div className={`h-7 w-20 rounded-full ${bar}`} />
             </div>
