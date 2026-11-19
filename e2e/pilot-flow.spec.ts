@@ -196,6 +196,7 @@ test('teacher marks attendance and records progress on a phone', async ({ browse
   await row('Nur Iman').getByRole('button', { name: 'Absent' }).click()
   await page.getByRole('button', { name: 'Mark everyone else present' }).click()
   await expect(page.getByText('2 present, 1 absent')).toBeVisible()
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
   await shot(page, '10-teacher-attendance-mobile')
   // Saved, not just shown: reload and check again
   await page.reload()
