@@ -46,7 +46,11 @@ async function newPerson(browser: Browser, mobile = false) {
     permissions: ['microphone'],
     ...(mobile ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } : {}),
   })
-  return ctx.newPage()
+  const page = await ctx.newPage()
+  // Surface browser-side crashes in the test log
+  page.on('pageerror', (e) => console.log(`[pageerror] ${page.url()}: ${e.message}\n${e.stack ?? ''}`))
+  page.on('console', (m) => m.type() === 'error' && console.log(`[console] ${m.text()}`))
+  return page
 }
 
 test.describe.configure({ mode: 'serial' })
