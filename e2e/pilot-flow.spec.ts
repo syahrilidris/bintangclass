@@ -394,7 +394,7 @@ test('parent records practice with no signal; it sends when back online; sign-ou
   await page.waitForTimeout(1500)
   await page.getByRole('button', { name: 'Stop' }).click()
   await page.getByRole('button', { name: 'Send to teacher' }).click()
-  await expect(page.getByText('Saved on this phone.')).toBeVisible()
+  await expect(page.getByText('Saved on this phone.', { exact: true })).toBeVisible()
   await shot(page, '41-offline-recording')
 
   await page.context().setOffline(false)
