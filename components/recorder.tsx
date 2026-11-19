@@ -132,7 +132,7 @@ export function Recorder({
   }
 
   return (
-    <div className="rounded-xl border border-line bg-white p-5">
+    <div className="rounded-xl border border-line bg-surface p-5">
       {phase.kind === 'idle' ? (
         <div className="grid gap-3">
           <p className="text-sm text-muted">Let {childName} read aloud, then send it to the teacher.</p>

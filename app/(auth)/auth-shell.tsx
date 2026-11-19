@@ -1,14 +1,18 @@
 import Link from 'next/link'
 import { Logo, Star } from '@/components/star'
+import { ThemeSwitch } from '@/components/theme'
 
 // Two-column frame for sign-in pages: the form on the left, a quiet navy panel with the star field on the right.
 export function AuthShell({ title, lead, children }: { title: string; lead?: string; children: React.ReactNode }) {
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
       <section className="flex flex-col px-6 py-8 sm:px-12">
-        <Link href="/" className="self-start">
-          <Logo />
-        </Link>
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/">
+            <Logo />
+          </Link>
+          <ThemeSwitch compact />
+        </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
           <h1 className="text-[1.75rem] font-bold">{title}</h1>
           {lead ? <p className="mt-2 text-muted">{lead}</p> : null}

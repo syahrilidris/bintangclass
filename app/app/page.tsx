@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ThemeSwitch } from '@/components/theme'
 import { redirect } from 'next/navigation'
 import { requireUser, ROLE_LABEL, type Role } from '@/lib/centre'
 import { Logo, Star } from '@/components/star'
@@ -26,9 +27,12 @@ export default async function AppHome() {
     <main className="mx-auto max-w-2xl px-6 py-8">
       <header className="flex items-center justify-between">
         <Logo />
-        <form action="/auth/signout" method="post">
-          <button className="text-sm text-muted hover:text-ink">Sign out</button>
-        </form>
+        <div className="flex items-center gap-4">
+          <ThemeSwitch compact />
+          <form action="/auth/signout" method="post">
+            <button className="text-sm text-muted hover:text-ink">Sign out</button>
+          </form>
+        </div>
       </header>
 
       <div className="mt-8"><InstallBanner /></div>

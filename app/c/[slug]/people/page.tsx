@@ -42,7 +42,7 @@ export default async function PeoplePage({ params }: { params: Promise<{ slug: s
               <ul className="panel rows mt-3">
                 {group.map((p) => (
                   <li key={p.user_id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-navy-900 text-xs font-bold text-white" aria-hidden>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-solid text-xs font-bold text-white" aria-hidden>
                       {initials(p.name) || '?'}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -73,7 +73,7 @@ export default async function PeoplePage({ params }: { params: Promise<{ slug: s
                         ) : null}
                         <details className="relative">
                           <summary className="cursor-pointer list-none text-sm font-semibold text-danger hover:underline">Remove</summary>
-                          <div className="absolute right-0 top-7 z-10 w-64 rounded-xl border border-line bg-white p-4 shadow-lg">
+                          <div className="absolute right-0 top-7 z-10 w-64 rounded-xl border border-line bg-raised p-4 shadow-lg">
                             <p className="text-sm">
                               {p.name} will lose access to {centre.name}
                               {r === 'parent' ? ' and their child’s records' : ''}. You can invite them again later.

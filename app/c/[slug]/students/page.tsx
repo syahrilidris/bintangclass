@@ -47,9 +47,9 @@ export default async function StudentsPage({
 
         {(classes ?? []).length > 1 ? (
           <nav className="mt-5 flex flex-wrap gap-2" aria-label="Filter by class">
-            <Link href="?" className={`rounded-full px-3 py-1 text-sm font-semibold ${!classFilter ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>All classes</Link>
+            <Link href="?" className={`rounded-full px-3 py-1 text-sm font-semibold ${!classFilter ? 'bg-solid text-white' : 'border border-line text-muted hover:text-ink'}`}>All classes</Link>
             {(classes ?? []).map((c) => (
-              <Link key={c.id} href={`?class=${c.id}`} className={`rounded-full px-3 py-1 text-sm font-semibold ${classFilter === c.id ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>
+              <Link key={c.id} href={`?class=${c.id}`} className={`rounded-full px-3 py-1 text-sm font-semibold ${classFilter === c.id ? 'bg-solid text-white' : 'border border-line text-muted hover:text-ink'}`}>
                 {c.name}
               </Link>
             ))}

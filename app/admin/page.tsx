@@ -8,7 +8,7 @@ export const metadata = { title: 'Overview' }
 const HEALTH_STYLE: Record<Health, string> = {
   active: 'bg-teal-50 text-teal-700',
   new: 'bg-paper text-ink',
-  quiet: 'bg-brass-soft text-[#6b5115]',
+  quiet: 'bg-brass-soft text-brass-ink',
   at_risk: 'bg-danger-soft text-danger',
   paused: 'bg-paper text-muted',
 }
@@ -68,9 +68,9 @@ export default async function PlatformOverview() {
             sub: `${replied} of ${plural(recs, 'recording')} answered, 30 days`,
           },
         ].map((k) => (
-          <div key={k.label} className="bg-white px-5 py-5">
+          <div key={k.label} className="bg-surface px-5 py-5">
             <p className="text-sm text-muted">{k.label}</p>
-            <p className="mt-1 text-[1.9rem] font-bold leading-tight text-navy-800">{k.value}</p>
+            <p className="mt-1 text-[1.9rem] font-bold leading-tight text-strong">{k.value}</p>
             <p className="mt-1 text-xs text-muted">{k.sub}</p>
           </div>
         ))}

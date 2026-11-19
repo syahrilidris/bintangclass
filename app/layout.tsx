@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { HydratedMarker } from '@/components/hydrated'
 import { ServiceWorkerRegister } from '@/components/pwa'
+import { themeScript } from '@/components/theme'
 
 export const metadata: Metadata = {
   title: { default: 'Bintang Class', template: '%s · Bintang Class' },
@@ -19,7 +20,11 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#10213d',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#10213d' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a1529' },
+  ],
+  colorScheme: 'light dark',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -30,8 +35,9 @@ const captureInstallPrompt = `window.addEventListener('beforeinstallprompt',func
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: captureInstallPrompt }} />
       </head>
       <body className="min-h-dvh">

@@ -50,10 +50,10 @@ export default async function PracticePage({
       ) : null}
 
       <nav className="flex gap-2" aria-label="Show">
-        <Link href="?" className={`rounded-full px-3 py-1 text-sm font-semibold ${!replied ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>
+        <Link href="?" className={`rounded-full px-3 py-1 text-sm font-semibold ${!replied ? 'bg-solid text-white' : 'border border-line text-muted hover:text-ink'}`}>
           To listen{waiting ? ` (${waiting})` : ''}
         </Link>
-        <Link href="?show=replied" className={`rounded-full px-3 py-1 text-sm font-semibold ${replied ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>
+        <Link href="?show=replied" className={`rounded-full px-3 py-1 text-sm font-semibold ${replied ? 'bg-solid text-white' : 'border border-line text-muted hover:text-ink'}`}>
           Replied
         </Link>
       </nav>

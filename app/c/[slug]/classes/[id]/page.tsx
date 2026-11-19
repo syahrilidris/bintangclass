@@ -85,7 +85,7 @@ export default async function ClassPage({
         </div>
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <section id="practice" className="grid scroll-mt-6 gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div>
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="section-title">Practice at home</h2>

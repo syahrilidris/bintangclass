@@ -80,7 +80,7 @@ export function NoteForm({ accountId }: { accountId: string }) {
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Kind of note">
         {[['call', 'Call'], ['whatsapp', 'WhatsApp'], ['meeting', 'Meeting'], ['note', 'Note']].map(([k, l]) => (
           <button key={k} type="button" role="radio" aria-checked={kind === k} onClick={() => setKind(k)}
-            className={`rounded-full px-3 py-1 text-sm font-semibold ${kind === k ? 'bg-navy-900 text-white' : 'border border-line text-muted hover:text-ink'}`}>
+            className={`rounded-full px-3 py-1 text-sm font-semibold ${kind === k ? 'bg-solid text-white' : 'border border-line text-muted hover:text-ink'}`}>
             {l}
           </button>
         ))}

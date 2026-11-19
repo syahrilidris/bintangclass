@@ -307,3 +307,24 @@ test('owner sees the day at a glance', async () => {
   await expect(page.getByText(parent.name, { exact: true })).toBeVisible()
   await shot(page, '15-people')
 })
+
+test('the same screens in dark mode, on a phone', async ({ browser }) => {
+  for (const who of [parent, teacher, owner]) {
+    const page = await newPerson(browser, true)
+    await page.addInitScript(() => localStorage.setItem('bc-theme', 'dark'))
+    await signIn(page, who.email)
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    const tag = who === parent ? 'parent' : who === teacher ? 'teacher' : 'owner'
+    await shot(page, `30-dark-${tag}-home`)
+    if (who === parent) {
+      await page.getByText('Aisyah binti Rahman').click()
+      await expect(page.getByRole('grid', { name: /Attendance,/ })).toBeVisible()
+      await shot(page, '31-dark-parent-child')
+    }
+    await page.context().close()
+  }
+  const light = await newPerson(browser, true)
+  await signIn(light, parent.email)
+  await shot(light, '32-light-parent-home-mobile')
+  await light.context().close()
+})

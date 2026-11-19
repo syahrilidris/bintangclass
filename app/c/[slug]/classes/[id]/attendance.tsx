@@ -78,7 +78,7 @@ export function Attendance({
                 disabled={!canMark}
                 aria-pressed={r.present === false}
                 onClick={() => set(r.id, r.present === false ? null : false)}
-                className={`btn sm:min-w-24 ${r.present === false ? 'bg-danger text-white' : 'btn-quiet'}`}
+                className={`btn sm:min-w-24 ${r.present === false ? 'bg-danger-solid text-white' : 'btn-quiet'}`}
               >
                 Absent
               </button>

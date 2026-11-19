@@ -38,7 +38,7 @@ export function SideNav({ items, root }: { items: NavItem[]; root: string }) {
               href={it.href}
               aria-current={active ? 'page' : undefined}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[0.93rem] font-medium transition-colors ${
-                active ? 'bg-navy-800 text-white' : 'text-white/70 hover:bg-navy-800/60 hover:text-white'
+                active ? 'bg-white/10 text-white shadow-[inset_3px_0_0_var(--color-teal-500)]' : 'text-white/70 hover:bg-white/5 hover:text-white'
               }`}
             >
               <span className={active ? 'text-teal-100' : ''}><Icon name={it.icon} /></span>
@@ -57,20 +57,20 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
   items = items.filter((it) => it.icon !== 'settings')
   if (items.length < 2) return null
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <ul className="mx-auto flex max-w-md justify-around">
+    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+      <ul className="mx-auto flex max-w-md justify-around px-2">
         {items.map((it) => {
           const active = isActive(path, it.href, root)
           return (
-            <li key={it.href}>
+            <li key={it.href} className="flex-1">
               <Link
                 href={it.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex min-w-16 flex-col items-center gap-0.5 px-3 py-2 text-[0.7rem] font-semibold ${active ? 'text-teal-700' : 'text-faint'}`}
+                className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[0.7rem] font-semibold transition-colors ${active ? 'text-teal-700' : 'text-faint hover:text-muted'}`}
               >
-                <span className="relative">
+                <span className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-colors ${active ? 'bg-teal-50' : ''}`}>
                   <Icon name={it.icon} />
-                  {it.badge ? <span className="absolute -right-2.5 -top-1.5 min-w-4 rounded-full bg-brass px-1 text-center text-[0.6rem] leading-4 text-navy-950">{it.badge}</span> : null}
+                  {it.badge ? <span className="absolute -top-1 right-1.5 min-w-4 rounded-full bg-brass px-1 text-center text-[0.6rem] leading-4 text-navy-950">{it.badge}</span> : null}
                 </span>
                 {it.label}
               </Link>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requirePlatformAdmin } from '@/lib/platform'
 import { Logo } from '@/components/star'
+import { ThemeSwitch } from '@/components/theme'
 
 export const metadata = { title: { default: 'Platform', template: '%s · Platform · Bintang Class' } }
 
@@ -20,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/leads" className="hover:text-white">Leads</Link>
             <Link href="/app" className="hover:text-white">Your centres</Link>
             <span className="hidden text-white/45 sm:inline">{user.email}</span>
+            <ThemeSwitch tone="onNavy" compact />
           </nav>
         </div>
       </header>

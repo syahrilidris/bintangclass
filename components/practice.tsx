@@ -30,7 +30,7 @@ export function Reply({ s, teacher }: { s: Submission; teacher?: string }) {
     <div className={`rounded-lg px-4 py-3 ${s.verdict === 'repeat' ? 'bg-brass-soft' : 'bg-teal-50'}`}>
       <div className="flex flex-wrap items-center gap-3">
         {s.stars ? <Stars n={s.stars} /> : null}
-        <span className={`text-sm font-bold ${s.verdict === 'repeat' ? 'text-[#6b5115]' : 'text-teal-700'}`}>
+        <span className={`text-sm font-bold ${s.verdict === 'repeat' ? 'text-brass-ink' : 'text-teal-700'}`}>
           {s.verdict === 'repeat' ? 'Please repeat' : 'Good'}
         </span>
         {teacher ? <span className="text-xs text-muted">{teacher}</span> : null}
