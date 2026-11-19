@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 
 export type NavItem = { href: string; label: string; icon: 'home' | 'classes' | 'students' | 'people' | 'settings' | 'practice'; badge?: number }
@@ -68,10 +68,10 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
                 aria-current={active ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[0.7rem] font-semibold transition-colors ${active ? 'text-teal-700' : 'text-faint hover:text-muted'}`}
               >
-                <span className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-colors ${active ? 'bg-teal-50' : ''}`}>
+                <TabPill active={active}>
                   <Icon name={it.icon} />
                   {it.badge ? <span className="absolute -top-1 right-1.5 min-w-4 rounded-full bg-brass px-1 text-center text-[0.6rem] leading-4 text-navy-950">{it.badge}</span> : null}
-                </span>
+                </TabPill>
                 {it.label}
               </Link>
             </li>
@@ -79,5 +79,15 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
         })}
       </ul>
     </nav>
+  )
+}
+
+/** Lights up as soon as the tab is tapped, before the page has arrived. */
+function TabPill({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const { pending } = useLinkStatus()
+  return (
+    <span className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-colors ${active || pending ? 'bg-teal-50 text-teal-700' : ''} ${pending ? 'animate-pulse' : ''}`}>
+      {children}
+    </span>
   )
 }

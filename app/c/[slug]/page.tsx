@@ -24,7 +24,7 @@ async function StaffHome({ slug }: { slug: string }) {
   const today = todayMY()
 
   const classesQ = supabase.from('classes').select('id, name, schedule, teacher_id').eq('centre_id', centre.id).order('name')
-  const [{ data: allClasses }, { data: students }, { data: marked }, { data: recent }, people] = await Promise.all([
+  const [{ data: allClasses }, { data: students }, { data: marked }, { data: recent }, people, { count: waiting }] = await Promise.all([
     isManager ? classesQ : classesQ.eq('teacher_id', user.id),
     supabase.from('students').select('id, class_id, status').eq('centre_id', centre.id).eq('status', 'active'),
     supabase.from('attendance').select('student_id, present').eq('centre_id', centre.id).eq('day', today),
@@ -35,6 +35,7 @@ async function StaffHome({ slug }: { slug: string }) {
       .order('created_at', { ascending: false })
       .limit(6),
     loadPeople(supabase, centre.id),
+    supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null),
   ])
 
   const classes = allClasses ?? []
@@ -52,7 +53,6 @@ async function StaffHome({ slug }: { slug: string }) {
   const firstName = greetingName(myName)
 
   const setup = isManager && (classes.length === 0 || activeCount === 0 || teacherCount === 0)
-  const { count: waiting } = await supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
 
   const doneClasses = classes.filter((cl) => {
     const total = byClass.get(cl.id) ?? 0

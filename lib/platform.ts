@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { requireUser } from '@/lib/centre'
 
@@ -7,12 +8,12 @@ export const FREE_STUDENTS = 10
 export { STAGES, STAGE_LABEL } from '@/lib/stages'
 
 /** Platform admin only. Everyone else gets a 404, so the page's existence isn't revealed. */
-export async function requirePlatformAdmin() {
+export const requirePlatformAdmin = cache(async () => {
   const { supabase, user } = await requireUser()
   const { data } = await supabase.from('platform_admins').select('user_id').eq('user_id', user.id).maybeSingle()
   if (!data) notFound()
   return { supabase, user }
-}
+})
 
 export async function isPlatformAdmin(): Promise<boolean> {
   const { supabase, user } = await requireUser()

@@ -3,6 +3,8 @@ import './globals.css'
 import { HydratedMarker } from '@/components/hydrated'
 import { ServiceWorkerRegister } from '@/components/pwa'
 import { themeScript } from '@/components/theme'
+import { NavProgress } from '@/components/nav-progress'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: { default: 'Bintang Class', template: '%s · Bintang Class' },
@@ -42,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh">
         <HydratedMarker />
+        <Suspense fallback={null}><NavProgress /></Suspense>
         <ServiceWorkerRegister />
         {children}
       </body>
