@@ -81,7 +81,7 @@ export default async function PlatformOverview() {
           <h2 className="section-title">Last 30 days</h2>
           <span className="text-sm text-muted">Attendance rate {pct(present, att) ?? '–'}%</span>
         </div>
-        <div className="-mx-5 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0 [&>*]:w-[82%] [&>*]:shrink-0 [&>*]:snap-start md:[&>*]:w-auto">
+        <div className="-mx-5 mt-4 flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0 [&>*]:w-[82%] [&>*]:shrink-0 [&>*]:snap-start md:[&>*]:w-auto">
           <ActivityChart title="Attendance marked" unit="marks" days={days} values={(daily ?? []).map((d) => d.attendance)} />
           <ActivityChart title="Recordings sent" unit="recordings" days={days} values={(daily ?? []).map((d) => d.recordings)} />
           <ActivityChart title="New centres" unit="sign-ups" days={days} values={(daily ?? []).map((d) => d.signups)} />
