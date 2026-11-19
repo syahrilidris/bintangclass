@@ -21,13 +21,13 @@ export default async function AdminCentrePage({ params }: { params: Promise<{ id
     <div className="grid gap-10">
       <header>
         <Link href="/admin" className="text-sm text-muted hover:text-ink">All centres</Link>
-        <h1 className="page-title mt-1">{c.name}</h1>
-        <p className="mt-1 text-muted">
+        <h1 className="page-title mt-1 break-words">{c.name}</h1>
+        <p className="mt-1 break-words text-sm text-muted sm:text-base">
           {[c.owner_name ? `Owner: ${c.owner_name}` : null, c.city, `joined ${ago(c.created_at)}`, `/c/${c.slug}`].filter(Boolean).join(', ')}
         </p>
       </header>
 
-      <section aria-label="Usage" className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
+      <section aria-label="Usage" className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line shadow-[var(--shadow-card)] sm:grid-cols-3 lg:grid-cols-6">
         {[
           ['Health', HEALTH_LABEL[h]],
           ['Active students', String(c.active_students)],
@@ -38,7 +38,7 @@ export default async function AdminCentrePage({ params }: { params: Promise<{ id
         ].map(([k, v]) => (
           <div key={k} className="bg-surface px-4 py-4">
             <p className="text-xs text-muted">{k}</p>
-            <p className="mt-1 font-bold text-strong">{v}</p>
+            <p className="mt-1 font-bold leading-snug text-strong">{v}</p>
           </div>
         ))}
       </section>

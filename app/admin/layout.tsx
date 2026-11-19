@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { requirePlatformAdmin } from '@/lib/platform'
-import { Logo } from '@/components/star'
+import { Logo, Star } from '@/components/star'
 import { ThemeSwitch } from '@/components/theme'
+import { AdminTabBar, AdminTopNav } from './admin-nav'
 
 export const metadata = { title: { default: 'Platform', template: '%s · Platform · Bintang Class' } }
 
@@ -10,22 +11,37 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { user } = await requirePlatformAdmin()
   return (
     <div className="min-h-dvh">
-      <header className="bg-navy-900 pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4 lg:px-10">
-          <div className="flex items-center gap-4">
-            <Link href="/admin"><Logo light /></Link>
+      <header className="bg-navy-900 pt-[env(safe-area-inset-top)] text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 pb-9 pt-3.5 md:pb-3.5 lg:px-10">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/admin" className="hidden sm:block"><Logo light /></Link>
+            <Link href="/admin" className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 sm:hidden" aria-label="Bintang Class">
+              <Star size={20} fill="var(--color-brass)" />
+            </Link>
             <span className="rounded-full bg-brass px-2.5 py-0.5 text-xs font-bold text-navy-950">Platform</span>
           </div>
-          <nav className="flex items-center gap-5 text-sm font-semibold text-white/75" aria-label="Platform">
-            <Link href="/admin" className="hover:text-white">Overview</Link>
-            <Link href="/admin/leads" className="hover:text-white">Leads</Link>
-            <Link href="/app" className="hover:text-white">Your centres</Link>
-            <span className="hidden text-white/45 sm:inline">{user.email}</span>
+          <AdminTopNav />
+          <div className="flex shrink-0 items-center gap-2">
             <ThemeSwitch tone="onNavy" compact />
-          </nav>
+            <details className="relative">
+              <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-teal-600 text-xs font-bold [&::-webkit-details-marker]:hidden" aria-label="Account">
+                {(user.email ?? '?').slice(0, 1).toUpperCase()}
+              </summary>
+              <div className="absolute right-0 z-30 mt-2 w-60 rounded-xl border border-line bg-raised p-2 text-ink shadow-[var(--shadow-float)]">
+                <p className="truncate px-3 py-2 text-sm text-muted">{user.email}</p>
+                <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Your centres</Link>
+                <form action="/auth/signout" method="post">
+                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft">Sign out</button>
+                </form>
+              </div>
+            </details>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-5 pb-16 pt-8 lg:px-10">{children}</main>
+      <div className="sheet md:mt-0 md:rounded-none">
+        <main className="mx-auto max-w-6xl px-5 pb-28 pt-6 md:pb-16 md:pt-8 lg:px-10">{children}</main>
+      </div>
+      <AdminTabBar />
     </div>
   )
 }
