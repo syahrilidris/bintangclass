@@ -47,7 +47,7 @@ export default async function PlatformOverview() {
   const days = (daily ?? []).map((d) => d.day)
 
   return (
-    <div className="grid gap-8 md:gap-10">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-8 md:gap-10">
       <header>
         <h1 className="page-title">All centres</h1>
         <p className="mt-1 text-muted">Numbers across every centre. Children’s names and recordings stay private to each centre.</p>
