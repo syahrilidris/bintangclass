@@ -11,25 +11,37 @@ export const ROLE_LABEL: Record<Role, string> = {
   parent: 'Parent',
 }
 
-export async function requireUser() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getUser()
-  if (!data.user) redirect('/login')
-  return { supabase, user: data.user }
-}
+export type AppUser = { id: string; email: string | null; user_metadata: Record<string, unknown> }
 
-/** The centre in the URL plus the signed-in user's role there. 404 if they don't belong. */
+/**
+ * The signed-in user, from the session token. getClaims checks the token's signature locally
+ * (no round trip to the auth server on every page), and the database still checks it on every query.
+ * Cached per request, so the layout and the page share one check.
+ */
+export const requireUser = cache(async () => {
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getClaims()
+  const c = data?.claims
+  if (!c?.sub) redirect('/login')
+  const user: AppUser = {
+    id: c.sub,
+    email: typeof c.email === 'string' ? c.email : null,
+    user_metadata: (c.user_metadata as Record<string, unknown> | undefined) ?? {},
+  }
+  return { supabase, user }
+})
+
+/** The centre in the URL plus the signed-in user's role there. 404 if they don't belong. One query, not two. */
 export const getCentre = cache(async (slug: string) => {
   const { supabase, user } = await requireUser()
-  const { data: centre } = await supabase.from('centres').select('*').eq('slug', slug).maybeSingle()
-  if (!centre) notFound()
   const { data: me } = await supabase
     .from('memberships')
-    .select('role, display_name')
-    .eq('centre_id', centre.id)
+    .select('role, display_name, centres!inner(*)')
     .eq('user_id', user.id)
+    .eq('centres.slug', slug)
     .maybeSingle()
-  if (!me) notFound()
+  if (!me || !me.centres) notFound()
+  const centre = me.centres
   const role = me.role as Role
   return {
     supabase,

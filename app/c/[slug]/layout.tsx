@@ -17,9 +17,12 @@ export default async function CentreLayout({ children, params }: { children: Rea
   const { centre, role, myName, user, isManager, isStaff, supabase } = await getCentre(slug)
   const root = `/c/${slug}`
 
-  const { count: waiting } = isStaff
-    ? await supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
-    : { count: 0 }
+  const [{ count: waiting }, { count }] = await Promise.all([
+    isStaff
+      ? supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
+      : Promise.resolve({ count: 0 }),
+    supabase.from('memberships').select('centre_id', { count: 'exact', head: true }).eq('user_id', user.id),
+  ])
   const practice: NavItem = { href: `${root}/practice`, label: 'Practice', icon: 'practice', badge: waiting ?? 0 }
 
   const items: NavItem[] = isManager
@@ -40,7 +43,6 @@ export default async function CentreLayout({ children, params }: { children: Rea
         ]
       : [{ href: root, label: 'My children', icon: 'students' }]
 
-  const { count } = await supabase.from('memberships').select('centre_id', { count: 'exact', head: true }).eq('user_id', user.id)
   const manyCentres = (count ?? 0) > 1
 
   return (
