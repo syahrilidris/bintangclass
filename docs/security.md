@@ -12,7 +12,7 @@ the publishable key, so **RLS is the security boundary** — not the Next.js app
 | **admin** | Office staff | Everything in their centre, including the activity log | Teachers, parents, classes, students, guardians, invites |
 | **teacher** | Ustaz / ustazah | Students in classes they teach, with their attendance, progress and recordings; the class list and staff list | Attendance, progress and recordings for those students, always in their own name |
 | **parent** | Guardian | Only their own children, their attendance, progress and recordings | Upload their own child's practice recordings |
-| **platform admin** | Bintang Class team (`platform_admins` table, added by service role only) | All centres, CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records, recordings or the activity log.** |
+| **platform admin** | Bintang Class team (`platform_admins` table, added by SQL only) | All centres' counts via `platform_centre_stats()` / `platform_daily_activity()` (no names), CRM | Centre plan/status (suspend, upgrade), CRM. **Cannot read children's records, recordings or the activity log.** |
 
 A person can hold different roles in different centres.
 
@@ -25,6 +25,7 @@ A person can hold different roles in different centres.
 - **Integrity:** a student, class, guardian link, attendance mark, progress entry or invite can never point across centres (trigger `private.same_centre_check`). A guardian must be a member of the centre.
 - **No impersonation:** `attendance.marked_by` and `progress.by_user` must equal the signed-in user (they default to it).
 - **Recordings:** private bucket `recordings`, path `<centre_id>/<student_id>/<file>`. The path must match a real student of that centre; read and upload follow the same rules as the student's record. Files are never overwritten (no update policy). Owners/admins can delete any recording in their centre; others only their own uploads. Audio only, 15 MB max.
+- **Practice and recordings:** teachers set practice (`homework`) only for classes they teach; parents see it for their children's classes. A recording (`submissions`) can only be sent by the child's parent (or their teacher or a manager), and its `audio_path` must sit in that child's own folder. Only staff reply (stars, good/repeat, note), and a trigger stops anyone changing the recording itself or who sent it. A sender can take back a recording before the teacher replies. The app deletes audio through the Storage API before deleting the row, because Supabase blocks direct deletes from `storage.objects`.
 - **Activity log:** inserts, updates and deletes on centres, memberships, classes, students, guardians and invites are written to `activity_log` with who did it and which fields changed. Only the trigger can write; only the centre's owner and admins can read. Invite tokens are stripped. Attendance and progress aren't logged because each row already records who wrote it.
 - **Clean exits:** removing someone from a centre deletes their guardian links and unassigns them from classes, so a removed parent loses access to their child immediately. Members can leave a centre themselves (except the owner).
 - **Invites:** single-use, 14-day expiry, bound to an email address. Accepting an invite upgrades an existing role (parent → teacher) but never downgrades.
@@ -42,8 +43,8 @@ Helper functions live in the `private` schema (not exposed over the API).
 ## Testing
 
 `supabase/tests/rls_test.sql` signs in as owner, admin, teacher, two parents, an outsider, a second
-centre's owner, a platform admin and a signed-out visitor, and runs 68 checks across tables and
-recordings. It always rolls back.
+centre's owner, a platform admin and a signed-out visitor, and runs 87 checks across tables,
+recordings, practice and platform stats. It always rolls back.
 
 GitHub Actions (`.github/workflows/db-isolation.yml`) runs it on every pull request and every push to
 `main` against a fresh local Supabase built from the migrations. Make it a required check on `main`
@@ -51,7 +52,7 @@ so a leak blocks the merge, and so the deploy.
 
 ```sh
 psql "$DATABASE_URL" -f supabase/tests/rls_test.sql 2>&1 | grep "RLS TESTS"
-# RLS TESTS PASSED: 68/68
+# RLS TESTS PASSED: 87/87
 ```
 
 Run it after every migration that touches tables or policies.

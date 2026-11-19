@@ -1,0 +1,97 @@
+# End-to-end: owner, teacher and parent go through the pilot journey in real browsers,
+# against a throwaway local Supabase built from supabase/migrations. Never touches production.
+# Screenshots are uploaded as an artifact and also pushed to the `e2e-screenshots` branch
+# (one folder per commit) so they can be reviewed without downloading anything.
+name: End-to-end
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  e2e:
+    name: Pilot journey
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0
+
+      - name: Start local Supabase
+        run: supabase start -x realtime,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Point the app at local Supabase
+        run: |
+          supabase status -o env > .sb.env
+          set -a; . ./.sb.env; set +a
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}" >> "$GITHUB_ENV"
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start app
+        run: |
+          npm start > app.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && exit 0; sleep 2; done
+          cat app.log; exit 1
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run pilot journey
+        env:
+          E2E_SHOTS_DIR: e2e-shots
+          E2E_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: |
+          mkdir -p e2e-shots
+          npx playwright test
+
+      - name: App log
+        if: always()
+        run: tail -200 app.log
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: |
+            e2e-shots
+            test-results
+          if-no-files-found: ignore
+
+      - name: Publish screenshots to e2e-screenshots branch
+        if: always() && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          ls e2e-shots/*.png > /dev/null 2>&1 || exit 0
+          dir="shots/${SHA:0:7}"
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          if git clone -q --depth 1 --branch e2e-screenshots "$remote" /tmp/pub; then cd /tmp/pub
+          else mkdir /tmp/pub && cd /tmp/pub && git init -q && git checkout -q --orphan e2e-screenshots && git remote add origin "$remote"; fi
+          mkdir -p "$dir"
+          cp "$GITHUB_WORKSPACE"/e2e-shots/*.png "$dir/"
+          find "$GITHUB_WORKSPACE/test-results" -name '*.png' -exec cp {} "$dir/" \; 2>/dev/null || true
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add shots && git commit -qm "Screenshots for $SHA" && git push -q origin e2e-screenshots
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
