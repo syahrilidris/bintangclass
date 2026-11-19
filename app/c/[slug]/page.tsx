@@ -64,10 +64,10 @@ async function StaffHome({ slug }: { slug: string }) {
   return (
     <div className="grid gap-8">
       <Hero eyebrow={formatDay(today)} title={`Assalamualaikum${firstName ? `, ${firstName}` : ''}`}>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid max-w-md grid-cols-3 gap-2">
           <HeroStat value={myStudents} label={isManager ? 'active students' : 'students'} />
-          <HeroStat value={`${doneClasses}/${classes.length}`} label="classes done today" />
-          <HeroStat value={waiting ?? 0} label="recordings waiting" />
+          <HeroStat value={`${doneClasses}/${classes.length}`} label="classes done" />
+          <HeroStat value={waiting ?? 0} label="to review" />
         </div>
       </Hero>
 
