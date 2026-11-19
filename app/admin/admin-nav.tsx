@@ -5,14 +5,14 @@ import { usePathname } from 'next/navigation'
 
 const ITEMS = [
   { href: '/admin', label: 'Overview', icon: <><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="4.5" rx="1.5" /><rect x="13" y="10.5" width="7" height="9.5" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /></> },
+  { href: '/admin/centres', label: 'Centres', icon: <path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /> },
   { href: '/admin/leads', label: 'Leads', icon: <><circle cx="10" cy="8" r="3.5" /><path d="M3.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.3 0 2.5.3 3.5.9M18 14v6M15 17h6" /></> },
-  { href: '/app', label: 'Your centres', icon: <path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /> },
 ]
 
 function active(path: string, href: string) {
-  if (href === '/admin') return path === '/admin' || path.startsWith('/admin/centres')
-  if (href === '/admin/leads') return path.startsWith('/admin/leads') || path.startsWith('/admin/crm')
-  return false
+  if (href === '/admin') return path === '/admin'
+  if (href === '/admin/centres') return path.startsWith('/admin/centres')
+  return path.startsWith('/admin/leads') || path.startsWith('/admin/crm')
 }
 
 /** Links in the navy header on wide screens. */

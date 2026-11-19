@@ -8,7 +8,8 @@ export const metadata = { title: { default: 'Platform', template: '%s · Platfor
 
 // The platform admin's own space: every centre's numbers and the CRM. No children's data here.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user } = await requirePlatformAdmin()
+  const { user, supabase } = await requirePlatformAdmin()
+  const { count: mine } = await supabase.from('memberships').select('centre_id', { count: 'exact', head: true }).eq('user_id', user.id)
   return (
     <div className="min-h-dvh">
       <header className="bg-navy-900 pt-[env(safe-area-inset-top)] text-white">
@@ -29,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </summary>
               <div className="absolute right-0 z-30 mt-2 w-60 rounded-xl border border-line bg-raised p-2 text-ink shadow-[var(--shadow-float)]">
                 <p className="truncate px-3 py-2 text-sm text-muted">{user.email}</p>
-                <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Your centres</Link>
+                {mine ? <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Centres you belong to</Link> : null}
                 <form action="/auth/signout" method="post">
                   <button className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft">Sign out</button>
                 </form>
