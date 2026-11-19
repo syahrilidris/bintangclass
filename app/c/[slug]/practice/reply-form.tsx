@@ -42,7 +42,7 @@ export function ReplyForm({ slug, id, initial, returnTo }: { slug: string; id: s
           <button type="button" role="radio" aria-checked={verdict === 'good'} onClick={() => setVerdict('good')} className={`btn ${verdict === 'good' ? 'bg-teal-600 text-white' : 'btn-quiet'}`}>
             Good
           </button>
-          <button type="button" role="radio" aria-checked={verdict === 'repeat'} onClick={() => setVerdict('repeat')} className={`btn ${verdict === 'repeat' ? 'bg-brass text-white' : 'btn-quiet'}`}>
+          <button type="button" role="radio" aria-checked={verdict === 'repeat'} onClick={() => setVerdict('repeat')} className={`btn ${verdict === 'repeat' ? 'bg-brass text-navy-950' : 'btn-quiet'}`}>
             Repeat
           </button>
         </div>

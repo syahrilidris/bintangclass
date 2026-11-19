@@ -36,9 +36,9 @@ export default async function AdminCentrePage({ params }: { params: Promise<{ id
           ['Attendance, 30d', `${c.attendance_30d} (${pct(c.present_30d, c.attendance_30d)} present)`],
           ['Recordings, 30d', `${c.recordings_30d} (${c.replied_30d} replied)`],
         ].map(([k, v]) => (
-          <div key={k} className="bg-white px-4 py-4">
+          <div key={k} className="bg-surface px-4 py-4">
             <p className="text-xs text-muted">{k}</p>
-            <p className="mt-1 font-bold text-navy-800">{v}</p>
+            <p className="mt-1 font-bold text-strong">{v}</p>
           </div>
         ))}
       </section>

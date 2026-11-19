@@ -24,11 +24,13 @@ export function Attendance({
   const [optimistic, setOptimistic] = useOptimistic(rows, (state, u: { id: string; present: boolean | null }) =>
     state.map((r) => (r.id === u.id ? { ...r, present: u.present } : r)),
   )
-  const [, start] = useTransition()
+  const [saving, start] = useTransition()
+  const [touched, setTouched] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   function set(id: string, present: boolean | null) {
     setError(null)
+    setTouched(true)
     start(async () => {
       setOptimistic({ id, present })
       const res = await markAttendance(slug, classId, id, day, present)
@@ -49,6 +51,9 @@ export function Attendance({
         <p className="text-sm text-muted">
           {marked === 0 ? 'Nobody marked yet' : `${present} present, ${marked - present} absent`}
           {marked < optimistic.length && marked > 0 ? `, ${optimistic.length - marked} to mark` : ''}
+          <span aria-live="polite" className={`ml-2 text-xs font-semibold ${saving ? 'text-faint' : 'text-teal-700'}`}>
+            {touched ? (saving ? 'Saving…' : 'Saved') : ''}
+          </span>
         </p>
         {canMark && marked < optimistic.length ? (
           <button className="btn btn-quiet" onClick={markAllPresent}>Mark everyone else present</button>
@@ -78,7 +83,7 @@ export function Attendance({
                 disabled={!canMark}
                 aria-pressed={r.present === false}
                 onClick={() => set(r.id, r.present === false ? null : false)}
-                className={`btn sm:min-w-24 ${r.present === false ? 'bg-danger text-white' : 'btn-quiet'}`}
+                className={`btn sm:min-w-24 ${r.present === false ? 'bg-danger-solid text-white' : 'btn-quiet'}`}
               >
                 Absent
               </button>

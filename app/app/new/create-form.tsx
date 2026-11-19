@@ -23,7 +23,7 @@ export function CreateCentreForm() {
       </label>
       <label className="field">
         <span>Web address</span>
-        <div className="flex items-center rounded-[0.6rem] border border-line bg-white focus-within:border-teal-500">
+        <div className="flex items-center rounded-[0.6rem] border border-line bg-surface focus-within:border-teal-500">
           <span className="pl-3 text-sm text-faint">/c/</span>
           <input
             className="input border-0 pl-0.5 focus:shadow-none"

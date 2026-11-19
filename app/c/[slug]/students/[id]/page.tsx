@@ -12,6 +12,7 @@ import { ReplyForm } from '../../practice/reply-form'
 import { removeSubmission } from '../../practice/actions'
 import { playbackUrls } from '@/lib/recordings'
 import { greetingName } from '@/lib/centre'
+import { AttendanceCalendar, isMonth } from '@/components/attendance-calendar'
 
 export const metadata = { title: 'Student' }
 
@@ -19,8 +20,15 @@ function shortDate(iso: string) {
   return new Intl.DateTimeFormat('en-MY', { day: 'numeric', month: 'short', timeZone: 'Asia/Kuala_Lumpur' }).format(new Date(iso))
 }
 
-export default async function StudentPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
+export default async function StudentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string; id: string }>
+  searchParams: Promise<{ month?: string }>
+}) {
   const { slug, id } = await params
+  const { month: m } = await searchParams
   const { supabase, centre, isManager, isStaff, canWrite, user } = await getCentre(slug)
   const root = `/c/${slug}`
 
@@ -32,11 +40,13 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
     .maybeSingle()
   if (!s) notFound()
 
-  const since = new Date(todayMY() + 'T00:00:00Z')
-  since.setUTCDate(since.getUTCDate() - 55)
+  const today = todayMY()
+  const month = isMonth(m) && m <= today.slice(0, 7) ? m : today.slice(0, 7)
+  const monthEnd = new Date(month + '-01T12:00:00Z')
+  monthEnd.setUTCMonth(monthEnd.getUTCMonth() + 1)
   const [{ data: progress }, { data: att }, { data: guardians }, { data: classes }, people] = await Promise.all([
     supabase.from('progress').select('id, book, page, note, by_user, created_at').eq('student_id', id).order('created_at', { ascending: false }).limit(30),
-    supabase.from('attendance').select('day, present').eq('student_id', id).gte('day', since.toISOString().slice(0, 10)).order('day'),
+    supabase.from('attendance').select('day, present').eq('student_id', id).gte('day', month + '-01').lt('day', monthEnd.toISOString().slice(0, 10)).order('day'),
     isStaff ? supabase.from('guardians').select('user_id').eq('student_id', id) : Promise.resolve({ data: [] as { user_id: string }[] }),
     isManager ? supabase.from('classes').select('id, name').eq('centre_id', centre.id).order('name') : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     loadPeople(supabase, centre.id),
@@ -56,7 +66,6 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
   const isGuardian = !isStaff
 
   const canRecord = canWrite && (isManager || s.classes?.teacher_id === user.id)
-  const presentCount = (att ?? []).filter((a) => a.present).length
 
   return (
     <div className="grid gap-10">
@@ -71,14 +80,14 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
         </div>
         <div className="panel px-6 py-5">
           <p className="text-sm text-muted">Reading now</p>
-          <p className="mt-0.5 text-[1.5rem] font-bold text-navy-800">{s.book}, page {s.page}</p>
+          <p className="mt-0.5 text-[1.5rem] font-bold text-strong">{s.book}, page {s.page}</p>
           <div className="mt-4"><StarTrack book={s.book} page={s.page} size="lg" /></div>
         </div>
       </header>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid content-start gap-10">
-          <section id="practice">
+          <section id="practice" className="scroll-mt-6">
             <h2 className="section-title">Practice at home</h2>
             {homework ? (
               <p className="mt-2">
@@ -116,7 +125,7 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
             ) : null}
           </section>
 
-          <section>
+          <section id="progress" className="scroll-mt-6">
             <h2 className="section-title">Progress</h2>
             {(progress ?? []).length === 0 ? (
               <p className="mt-3 text-muted">No progress recorded yet.</p>
@@ -136,26 +145,11 @@ export default async function StudentPage({ params }: { params: Promise<{ slug: 
             )}
           </section>
 
-          <section>
-            <div className="flex items-baseline justify-between">
-              <h2 className="section-title">Attendance, last 8 weeks</h2>
-              <span className="text-sm text-muted">{presentCount} of {(att ?? []).length} classes</span>
+          <section id="attendance" className="scroll-mt-6">
+            <h2 className="section-title">Attendance</h2>
+            <div className="mt-4">
+              <AttendanceCalendar month={month} today={today} days={att ?? []} hrefFor={(mo) => `${root}/students/${s.id}?month=${mo}#attendance`} />
             </div>
-            {(att ?? []).length === 0 ? (
-              <p className="mt-3 text-muted">No attendance marked yet.</p>
-            ) : (
-              <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Attendance by day">
-                {(att ?? []).map((a) => (
-                  <li
-                    key={a.day}
-                    title={`${a.day}: ${a.present ? 'present' : 'absent'}`}
-                    className={`h-7 w-7 rounded-md text-center text-[0.65rem] font-semibold leading-7 ${a.present ? 'bg-teal-600 text-white' : 'bg-danger-soft text-danger'}`}
-                  >
-                    {Number(a.day.slice(8))}
-                  </li>
-                ))}
-              </ul>
-            )}
           </section>
 
           {isStaff ? (
