@@ -24,6 +24,7 @@ export function NavProgress() {
       if (url.origin !== location.origin) return
       if (url.pathname === location.pathname && url.search === location.search) return
       setBusy(true)
+      window.dispatchEvent(new CustomEvent('bc-nav-start', { detail: url.pathname }))
     }
     document.addEventListener('click', onClick)
     return () => document.removeEventListener('click', onClick)

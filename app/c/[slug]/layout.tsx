@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { RouteSkeleton } from '@/components/route-skeleton'
 import { PullToRefresh } from '@/components/pull-refresh'
 import { SignOutButton } from '@/components/offline'
 import { getCentre, ROLE_LABEL } from '@/lib/centre'
@@ -107,7 +109,8 @@ export default async function CentreLayout({ children, params }: { children: Rea
           </div>
         </header>
 
-        <div className="sheet lg:mt-0 lg:rounded-none">
+        <div className="sheet relative lg:mt-0 lg:rounded-none">
+          <Suspense fallback={null}><RouteSkeleton /></Suspense>
         {centre.status !== 'active' ? (
           <div className="notice notice-warn mx-5 pt-5 lg:mx-10">
             {centre.status === 'read_only'

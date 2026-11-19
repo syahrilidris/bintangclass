@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { RouteSkeleton } from '@/components/route-skeleton'
 import { PullToRefresh } from '@/components/pull-refresh'
 import { SignOutButton } from '@/components/offline'
 import { requirePlatformAdmin } from '@/lib/platform'
@@ -39,7 +41,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </div>
       </header>
-      <div className="sheet md:mt-0 md:rounded-none">
+      <div className="sheet relative md:mt-0 md:rounded-none">
+        <Suspense fallback={null}><RouteSkeleton /></Suspense>
         <main className="mx-auto max-w-6xl px-5 pb-28 pt-6 md:pb-16 md:pt-8 lg:px-10">{children}</main>
       </div>
       <AdminTabBar />

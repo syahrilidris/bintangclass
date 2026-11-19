@@ -306,6 +306,18 @@ test('owner sees the day at a glance', async () => {
   await expect(page.getByText('Marked')).toBeVisible()
   await expect(page.getByText(/reached Iqra 4, page 23/)).toBeVisible()
   await shot(page, '14-owner-today')
+
+  // On a slow connection, tapping a link shows the next page's outline straight away
+  await page.route(/\/students(\?|$)/, async (route) => {
+    if (route.request().headers()['rsc']) await new Promise((r) => setTimeout(r, 1500))
+    await route.continue()
+  })
+  await page.getByRole('link', { name: 'Students', exact: true }).first().click()
+  await expect(page.getByLabel('Loading')).toBeVisible()
+  await shot(page, '14c-loading-outline')
+  await expect(page.getByRole('heading', { name: 'Students' })).toBeVisible()
+  await expect(page.getByLabel('Loading')).toHaveCount(0)
+  await page.unrouteAll()
   await page.goto(`/c/${slug}/people`)
   await ready(page)
   await expect(page.getByText(teacher.name, { exact: true })).toBeVisible()
