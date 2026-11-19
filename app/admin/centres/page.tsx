@@ -41,10 +41,10 @@ export default async function AdminCentres({ searchParams }: { searchParams: Pro
       </form>
 
       <nav aria-label="Filter by health" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
-        <Link href={href(null)} scroll={false} aria-current={!filter ? 'true' : undefined} className={`chip shrink-0 ${!filter ? 'chip-on' : ''}`}>All {all.length}</Link>
+        <Link href={href(null)} scroll={false} aria-current={!filter ? 'true' : undefined} className={`chip shrink-0 ${!filter ? 'chip-on' : ''}`}>{`All ${all.length}`}</Link>
         {ORDER.filter((h) => count(h)).map((h) => (
           <Link key={h} href={href(h)} scroll={false} aria-current={filter === h ? 'true' : undefined} className={`chip shrink-0 ${filter === h ? 'chip-on' : ''}`}>
-            {HEALTH_LABEL[h]} {count(h)}
+            {`${HEALTH_LABEL[h]} ${count(h)}`}
           </Link>
         ))}
       </nav>
