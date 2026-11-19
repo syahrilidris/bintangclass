@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { RouteSkeleton } from '@/components/route-skeleton'
+import { PullToRefresh } from '@/components/pull-refresh'
+import { SignOutButton } from '@/components/offline'
 import { getCentre, ROLE_LABEL } from '@/lib/centre'
 import { Logo, Star } from '@/components/star'
 import { SideNav, TabBar, type NavItem } from './nav'
@@ -63,9 +67,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
           <div>
           <p className="truncate text-sm text-white/80">{myName || user.email}</p>
           <div className="mt-1 flex gap-4">
-            <form action="/auth/signout" method="post">
-              <button className="text-xs text-white/50 hover:text-white">Sign out</button>
-            </form>
+            <SignOutButton className="text-xs text-white/50 hover:text-white" label="Sign out" />
             <InstallLink className="text-xs text-white/50 hover:text-white" />
           </div>
           </div>
@@ -100,16 +102,15 @@ export default async function CentreLayout({ children, params }: { children: Rea
                   {role === 'owner' ? <Link href={`${root}/settings`} className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Centre settings</Link> : null}
                   {manyCentres ? <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Switch centre</Link> : null}
                   <InstallLink className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-paper" />
-                  <form action="/auth/signout" method="post">
-                    <button className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft">Sign out</button>
-                  </form>
+                  <SignOutButton className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft" label="Sign out" />
                 </div>
               </details>
             </div>
           </div>
         </header>
 
-        <div className="sheet lg:mt-0 lg:rounded-none">
+        <div className="sheet relative lg:mt-0 lg:rounded-none">
+          <Suspense fallback={null}><RouteSkeleton /></Suspense>
         {centre.status !== 'active' ? (
           <div className="notice notice-warn mx-5 pt-5 lg:mx-10">
             {centre.status === 'read_only'
@@ -125,6 +126,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
         </div>
       </div>
       <TabBar items={items} root={root} />
+      <PullToRefresh />
     </div>
   )
 }

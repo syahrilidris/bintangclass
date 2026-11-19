@@ -36,6 +36,7 @@ export function SideNav({ items, root }: { items: NavItem[]; root: string }) {
           <li key={it.href}>
             <Link
               href={it.href}
+              prefetch
               aria-current={active ? 'page' : undefined}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[0.93rem] font-medium transition-colors ${
                 active ? 'bg-white/10 text-white shadow-[inset_3px_0_0_var(--color-teal-500)]' : 'text-white/70 hover:bg-white/5 hover:text-white'
@@ -65,6 +66,7 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
             <li key={it.href} className="flex-1">
               <Link
                 href={it.href}
+                prefetch
                 aria-current={active ? 'page' : undefined}
                 className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[0.7rem] font-semibold transition-colors ${active ? 'text-teal-700' : 'text-faint hover:text-muted'}`}
               >

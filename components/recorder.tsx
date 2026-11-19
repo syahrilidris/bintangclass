@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { saveSubmission } from '@/app/c/[slug]/practice/actions'
+import { isNetworkError, queueRecording } from '@/lib/offline-queue'
 
 const MAX_SECONDS = 5 * 60
 
@@ -13,6 +14,7 @@ type Phase =
   | { kind: 'review'; blob: Blob; url: string; seconds: number; type: string }
   | { kind: 'sending' }
   | { kind: 'sent' }
+  | { kind: 'kept' }
 
 function pickType(): string {
   if (typeof MediaRecorder === 'undefined') return ''
@@ -112,15 +114,30 @@ export function Recorder({
     }
     setError(null)
     setPhase({ kind: 'sending' })
-    const path = `${centreId}/${studentId}/${crypto.randomUUID()}.${EXT[type] ?? 'webm'}`
+    const ext = EXT[type] ?? 'webm'
+    // No signal: keep it on this phone and send it automatically later.
+    const keep = async () => {
+      await queueRecording({ centreId, studentId, homeworkId, childName, type, ext, seconds, blob })
+      setPhase({ kind: 'kept' })
+    }
+    if (!navigator.onLine) return keep()
+    const path = `${centreId}/${studentId}/${crypto.randomUUID()}.${ext}`
     const supabase = createClient()
-    const up = await supabase.storage.from('recordings').upload(path, blob, { contentType: type, upsert: false })
+    const up = await supabase.storage.from('recordings').upload(path, blob, { contentType: type, upsert: false }).catch((e) => ({ error: e as Error }))
+    if (up.error && isNetworkError(up.error)) return keep()
     if (up.error) {
       setError(`Couldn’t upload the recording: ${up.error.message}. Check your connection and try again.`)
       setPhase({ kind: 'review', blob, url: URL.createObjectURL(blob), seconds, type })
       return
     }
-    const res = await saveSubmission({ slug, studentId, homeworkId, path, seconds: Math.round(seconds) })
+    const res = await saveSubmission({ slug, studentId, homeworkId, path, seconds: Math.round(seconds) }).catch((e) => {
+      if (isNetworkError(e)) return { error: 'offline' as const }
+      throw e
+    })
+    if (res?.error === 'offline') {
+      await supabase.storage.from('recordings').remove([path]).catch(() => {})
+      return keep()
+    }
     if (res?.error) {
       await supabase.storage.from('recordings').remove([path])
       setError(res.error)
@@ -177,6 +194,15 @@ export function Recorder({
         <div className="flex flex-wrap items-center justify-between gap-3" aria-live="polite">
           <p className="font-semibold text-teal-700">Sent. The teacher will listen and reply here.</p>
           <button type="button" className="btn btn-quiet" onClick={() => setPhase({ kind: 'idle' })}>Record another</button>
+        </div>
+      ) : null}
+
+      {phase.kind === 'kept' ? (
+        <div className="grid gap-3" aria-live="polite">
+          <p className="notice notice-warn">
+            <strong>Saved on this phone.</strong> There’s no connection right now. It will send to the teacher by itself when you’re back online.
+          </p>
+          <button type="button" className="btn btn-quiet justify-self-start" onClick={() => setPhase({ kind: 'idle' })}>Record another</button>
         </div>
       ) : null}
 

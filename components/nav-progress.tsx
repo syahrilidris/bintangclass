@@ -17,16 +17,18 @@ export function NavProgress() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      // Capture phase: runs before Next's Link handles (and cancels) the click.
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
       const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
       if (!a || a.target === '_blank' || a.hasAttribute('download')) return
       const url = new URL(a.href, location.href)
       if (url.origin !== location.origin) return
       if (url.pathname === location.pathname && url.search === location.search) return
       setBusy(true)
+      window.dispatchEvent(new CustomEvent('bc-nav-start', { detail: url.pathname }))
     }
-    document.addEventListener('click', onClick)
-    return () => document.removeEventListener('click', onClick)
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
 
   // Safety net: never leave the bar running if a navigation is cancelled.

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SignOutButton } from '@/components/offline'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { displayName, ROLE_LABEL, type Role } from '@/lib/centre'
@@ -84,9 +85,7 @@ export default async function InvitePage({
                     You’re signed in as {user.email}, but this invitation is for {invite.email}. Sign out, then open this link
                     again and sign in with {invite.email}.
                   </p>
-                  <form action="/auth/signout" method="post">
-                    <button className="btn btn-quiet w-full">Sign out</button>
-                  </form>
+                  <SignOutButton className="btn btn-quiet w-full" label="Sign out" />
                 </div>
               ) : (
                 <form action={accept}>

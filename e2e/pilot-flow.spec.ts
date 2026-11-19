@@ -46,7 +46,11 @@ async function newPerson(browser: Browser, mobile = false) {
     permissions: ['microphone'],
     ...(mobile ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } : {}),
   })
-  return ctx.newPage()
+  const page = await ctx.newPage()
+  // Surface browser-side crashes in the test log
+  page.on('pageerror', (e) => console.log(`[pageerror] ${page.url()}: ${e.message}\n${e.stack ?? ''}`))
+  page.on('console', (m) => m.type() === 'error' && console.log(`[console] ${m.text()}`))
+  return page
 }
 
 test.describe.configure({ mode: 'serial' })
@@ -302,6 +306,19 @@ test('owner sees the day at a glance', async () => {
   await expect(page.getByText('Marked')).toBeVisible()
   await expect(page.getByText(/reached Iqra 4, page 23/)).toBeVisible()
   await shot(page, '14-owner-today')
+
+  // On a slow connection, tapping a link shows the next page's outline straight away
+  // (tabs are loaded in advance, so use a class link, which isn't)
+  await page.route(/\/classes\/[0-9a-f-]{36}/, async (route) => {
+    if (route.request().headers()['rsc']) await new Promise((r) => setTimeout(r, 1500))
+    await route.continue()
+  })
+  await page.getByRole('link', { name: /Iqra Pagi/ }).first().click()
+  await expect(page.getByLabel('Loading')).toBeVisible()
+  await shot(page, '14c-loading-outline')
+  await expect(page.getByRole('heading', { name: 'Iqra Pagi' })).toBeVisible()
+  await expect(page.getByLabel('Loading')).toHaveCount(0)
+  await page.unrouteAll()
   await page.goto(`/c/${slug}/people`)
   await ready(page)
   await expect(page.getByText(teacher.name, { exact: true })).toBeVisible()
@@ -328,4 +345,79 @@ test('the same screens in dark mode, on a phone', async ({ browser }) => {
   await signIn(light, parent.email)
   await shot(light, '32-light-parent-home-mobile')
   await light.context().close()
+})
+
+/** Let the service worker take control, as it does from the second visit onwards. */
+async function controlled(page: Page) {
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready
+  })
+  await page.reload()
+  await ready(page)
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
+}
+
+test('teacher marks attendance with no signal; it sends when back online', async ({ browser }) => {
+  const page = await newPerson(browser, true)
+  await signIn(page, teacher.email)
+  await controlled(page)
+  await page.getByRole('link', { name: /Iqra Pagi/ }).first().click()
+  await expect(page.getByRole('heading', { name: 'Iqra Pagi' })).toBeVisible()
+  await ready(page)
+  const classUrl = page.url()
+  // Pages reached by in-app links are saved for offline in the background
+  await expect
+    .poll(() => page.evaluate(async (u) => Boolean(await (await caches.open('bc-pages')).match(new URL(u).pathname)), classUrl), { timeout: 15_000 })
+    .toBe(true)
+
+  await page.context().setOffline(true)
+  // Pages already opened still show, with when they were saved
+  await page.goto(`/c/${slug}`).catch(() => {})
+  await expect(page.getByText(/You’re offline\. Showing this page as it was at/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Assalamualaikum/ })).toBeVisible()
+  await page.goto(classUrl).catch(() => {})
+  await ready(page)
+  const row = page.getByRole('group', { name: 'Attendance for Nur Iman' })
+  await row.getByRole('button', { name: 'Present' }).click()
+  await expect(row.getByRole('button', { name: 'Present' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText('Not sent yet')).toBeVisible()
+  await expect(page.getByText('Saved on this phone, sends when online')).toBeVisible()
+  await shot(page, '40-offline-attendance')
+
+  await page.context().setOffline(false)
+  await expect(page.getByText('Sent 1 saved item.')).toBeVisible({ timeout: 20_000 })
+  await page.reload()
+  await ready(page)
+  await expect(page.getByRole('group', { name: 'Attendance for Nur Iman' }).getByRole('button', { name: 'Present' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText('3 present, 0 absent')).toBeVisible()
+  await page.context().close()
+})
+
+test('parent records practice with no signal; it sends when back online; sign-out wipes the phone', async ({ browser }) => {
+  const page = await newPerson(browser, true)
+  await signIn(page, parent.email)
+  await controlled(page)
+  await page.getByText('Aisyah binti Rahman').click()
+  await expect(page).toHaveURL(/\/students\//)
+  await expect(page.getByRole('button', { name: 'Start recording' })).toBeVisible()
+  const before = await page.locator('audio').count()
+
+  await page.context().setOffline(true)
+  await page.getByRole('button', { name: 'Start recording' }).click()
+  await page.waitForTimeout(1500)
+  await page.getByRole('button', { name: 'Stop' }).click()
+  await page.getByRole('button', { name: 'Send to teacher' }).click()
+  await expect(page.getByText('Saved on this phone.', { exact: true })).toBeVisible()
+  await shot(page, '41-offline-recording')
+
+  await page.context().setOffline(false)
+  await expect(page.getByText('Sent 1 saved item.')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('audio')).toHaveCount(before + 1)
+
+  expect(await page.evaluate(() => caches.has('bc-pages'))).toBe(true)
+  await page.getByLabel('Account').click()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await expect(page).toHaveURL(/\/(login)?$/)
+  expect(await page.evaluate(() => caches.has('bc-pages'))).toBe(false)
+  await page.context().close()
 })

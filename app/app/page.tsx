@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SignOutButton } from '@/components/offline'
 import { ThemeSwitch } from '@/components/theme'
 import { redirect } from 'next/navigation'
 import { requireUser, ROLE_LABEL, type Role } from '@/lib/centre'
@@ -29,9 +30,7 @@ export default async function AppHome() {
         <Logo />
         <div className="flex items-center gap-4">
           <ThemeSwitch compact />
-          <form action="/auth/signout" method="post">
-            <button className="text-sm text-muted hover:text-ink">Sign out</button>
-          </form>
+          <SignOutButton className="text-sm text-muted hover:text-ink" label="Sign out" />
         </div>
       </header>
 
