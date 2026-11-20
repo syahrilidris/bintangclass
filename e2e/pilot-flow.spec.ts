@@ -307,6 +307,12 @@ test('owner sees the day at a glance', async () => {
   await expect(page.getByText(/reached Iqra 4, page 23/)).toBeVisible()
   await shot(page, '14-owner-today')
 
+  // Desktop account menu at the bottom of the sidebar
+  await page.locator('aside summary').click()
+  await expect(page.locator('aside').getByRole('button', { name: 'How to use the app' })).toBeVisible()
+  await page.screenshot({ path: `${shots}/14d-desktop-menu.png` })
+  await page.locator('aside summary').click()
+
   // On a slow connection, tapping a link shows the next page's outline straight away
   // (tabs are loaded in advance, so use a class link, which isn't)
   await page.route(/\/classes\/[0-9a-f-]{36}/, async (route) => {
