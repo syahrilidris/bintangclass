@@ -157,6 +157,20 @@ begin
   total := total + 1; if pg_temp.run(format('delete from public.submissions where student_id = %L', s1)) > 0 then failed := array_append(failed, 'parent deleted a recording the teacher replied to'::text); end if;
   perform pg_temp.sign_in(t1);
 
+  -- ===== notifications =====
+  -- the teacher heard about the recording, the parent about the reply; nobody else sees either
+  total := total + 1; if pg_temp.cnt(format('select * from public.notifications where kind = %L', 'recording')) < 1 then failed := array_append(failed, 'teacher not notified of recording'::text); end if;
+  total := total + 1; if pg_temp.cnt('select * from public.notifications where user_id <> auth.uid()') <> 0 then failed := array_append(failed, 'teacher sees others'' notifications'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.notifications (centre_id, user_id, kind, title, url) values (%L, %L, %L, %L, %L)', ca, p1, 'reply', 'Fake', '/x')) > 0 then failed := array_append(failed, 'user wrote a notification'::text); end if;
+  total := total + 1; if pg_temp.run(format('update public.notifications set title = %L', 'Changed')) > 0 then failed := array_append(failed, 'user changed notification text'::text); end if;
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.cnt(format('select * from public.notifications where kind = %L', 'reply')) < 1 then failed := array_append(failed, 'parent not notified of reply'::text); end if;
+  total := total + 1; if pg_temp.run('update public.notifications set read_at = now()') < 1 then failed := array_append(failed, 'parent cannot mark notifications read'::text); end if;
+  perform pg_temp.sign_in(p2);
+  total := total + 1; if pg_temp.cnt('select * from public.notifications') <> 0 then failed := array_append(failed, 'other parent sees notifications'::text); end if;
+  total := total + 1; if pg_temp.run(format('select public.push_gone(%L, array[%L])', 'guess', 'https://x')) <> -1 then failed := array_append(failed, 'push_gone accepted a wrong secret'::text); end if;
+  perform pg_temp.sign_in(t1);
+
   -- progress moved the student's book/page
   perform pg_temp.sign_in(p1);
   total := total + 1; if pg_temp.cnt(format('select * from public.students where id = %L and page = 5', s1)) <> 1 then failed := array_append(failed, 'progress did not update student page'::text); end if;

@@ -525,3 +525,29 @@ test('signing up again with an email that has an account says so', async ({ brow
   await shot(page, '16-signup-exists')
   await page.context().close()
 })
+
+test('the bell shows new recordings to the teacher and replies to the parent', async ({ browser }) => {
+  const t = await newPerson(browser, true)
+  await signIn(t, teacher.email)
+  await t.getByRole('link', { name: /^Notifications, \d+ new$/ }).click()
+  await expect(t.getByRole('heading', { name: 'Notifications' })).toBeVisible()
+  await expect(t.getByText(/New recording from Aisyah/).first()).toBeVisible()
+  await expect(t.getByText('Phone notifications')).toBeVisible()
+  await shot(t, '17-teacher-notifications')
+  await t.reload()
+  await ready(t)
+  await expect(t.getByRole('link', { name: 'Notifications', exact: true })).toBeVisible() // all seen now
+  await t.context().close()
+
+  const p = await newPerson(browser, true)
+  await signIn(p, parent.email)
+  await p.getByRole('link', { name: /^Notifications, \d+ new$/ }).click()
+  await expect(p.getByText(/replied to Aisyah’s recording/).first()).toBeVisible()
+  await expect(p.getByText(/New practice for Aisyah/).first()).toBeVisible()
+  await expect(p.getByText(/Aisyah is reading Iqra 4, page 23/).first()).toBeVisible()
+  await expect(p.getByText(/New recording from/)).toHaveCount(0) // parents don't get teachers' notifications
+  await shot(p, '18-parent-notifications')
+  await p.getByText(/replied to Aisyah’s recording/).first().click()
+  await expect(p).toHaveURL(/\/students\//)
+  await p.context().close()
+})

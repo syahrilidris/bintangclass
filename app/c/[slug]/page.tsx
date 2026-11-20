@@ -4,6 +4,7 @@ import { initials, loadPeople } from '@/lib/people'
 import { StarTrack } from '@/components/star-track'
 import { Star } from '@/components/star'
 import { Hero, HeroStat, Ring, Tile } from '@/components/ui'
+import { PushPrompt } from '@/components/push'
 
 export const metadata = { title: 'Today' }
 
@@ -70,6 +71,8 @@ async function StaffHome({ slug }: { slug: string }) {
           <HeroStat value={waiting ?? 0} label="to review" />
         </div>
       </Hero>
+
+      <PushPrompt text="Know as soon as a parent sends a recording, so you can reply between classes." />
 
       <nav aria-label="Quick actions" data-tour="actions" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {isManager ? (
@@ -231,6 +234,8 @@ async function ParentHome({ slug, child }: { slug: string; child?: string }) {
   return (
     <div className="grid gap-6">
       {hero}
+
+      <PushPrompt text={`Know as soon as the teacher replies to ${k.full_name.split(' ')[0]}’s recording or sets new practice.`} />
 
       {list.length > 1 ? (
         <nav aria-label="Choose a child" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:px-0">

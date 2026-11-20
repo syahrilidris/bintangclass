@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Bell } from '@/components/bell'
 import { Tour, TourButton } from '@/components/tour'
 import { Suspense } from 'react'
 import { RouteSkeleton } from '@/components/route-skeleton'
@@ -22,11 +23,12 @@ export default async function CentreLayout({ children, params }: { children: Rea
   const { centre, role, myName, user, isManager, isStaff, supabase } = await getCentre(slug)
   const root = `/c/${slug}`
 
-  const [{ count: waiting }, { count }] = await Promise.all([
+  const [{ count: waiting }, { count }, { count: unread }] = await Promise.all([
     isStaff
       ? supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
       : Promise.resolve({ count: 0 }),
     supabase.from('memberships').select('centre_id', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('read_at', null),
   ])
   const practice: NavItem = { href: `${root}/practice`, label: 'Practice', icon: 'practice', badge: waiting ?? 0 }
 
@@ -54,7 +56,10 @@ export default async function CentreLayout({ children, params }: { children: Rea
     <div className="min-h-dvh lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)]">
       <div className="hidden bg-navy-900 lg:block">
       <aside className="sticky top-0 flex h-dvh flex-col px-4 py-6">
-        <Link href={root} className="px-2"><Logo light /></Link>
+        <div className="flex items-center justify-between px-2">
+          <Link href={root}><Logo light /></Link>
+          <Bell href={`${root}/notifications`} count={unread ?? 0} />
+        </div>
         <div className="mt-8 rounded-lg bg-navy-950/60 px-3 py-3">
           <p className="truncate font-semibold text-white">{centre.name}</p>
           <p className="text-xs text-white/55">{ROLE_LABEL[role]}{centre.city ? `, ${centre.city}` : ''}</p>
@@ -101,6 +106,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
               </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2">
+              <Bell href={`${root}/notifications`} count={unread ?? 0} />
               <ThemeSwitch tone="onNavy" compact />
               <details className="relative" data-tour="account">
                 <summary
