@@ -66,6 +66,31 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   return { sent: email }
 }
 
+export async function sendReset(_: AuthState, form: FormData): Promise<AuthState> {
+  const email = String(form.get('email') ?? '').trim()
+  if (!email) return { error: 'Enter the email you sign in with.' }
+  const supabase = await createClient()
+  const origin = await getOrigin()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent('/app/password')}`,
+  })
+  // Same answer whether or not the email has an account, so nobody can check who uses the app.
+  if (error && /rate limit/i.test(error.message)) return { error: friendly(error.message) }
+  return { sent: email }
+}
+
+export async function setPassword(_: AuthState, form: FormData): Promise<AuthState> {
+  const password = String(form.get('password') ?? '')
+  if (password.length < 8) return { error: 'Use a password of at least 8 characters.' }
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) {
+    if (/different from the old/i.test(error.message)) return { error: 'Choose a password you haven’t used here before.' }
+    return { error: friendly(error.message) }
+  }
+  return { sent: 'changed' }
+}
+
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()

@@ -71,7 +71,7 @@ async function StaffHome({ slug }: { slug: string }) {
         </div>
       </Hero>
 
-      <nav aria-label="Quick actions" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <nav aria-label="Quick actions" data-tour="actions" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {isManager ? (
           <>
             <Tile href={`${root}/students`} icon="addStudent" label="Add a student" hint="Name, class, Iqra level" />
@@ -100,7 +100,7 @@ async function StaffHome({ slug }: { slug: string }) {
       ) : null}
 
       {setup ? (
-        <section className="panel p-6">
+        <section className="panel p-6" data-tour="setup">
           <h2 className="section-title">Get your centre ready</h2>
           <p className="mt-1 text-sm text-muted">Three steps and your teachers can start marking attendance.</p>
           <ol className="mt-5 grid gap-3">
@@ -124,7 +124,7 @@ async function StaffHome({ slug }: { slug: string }) {
         </section>
       ) : null}
 
-      <section>
+      <section data-tour="classes">
         <div className="flex items-baseline justify-between">
           <h2 className="section-title">{isManager ? 'Attendance today' : 'Your classes today'}</h2>
           {isManager ? <span className="text-sm text-muted">{activeCount} active students</span> : null}
@@ -246,7 +246,7 @@ async function ParentHome({ slug, child }: { slug: string; child?: string }) {
         </nav>
       ) : null}
 
-      <section className="panel overflow-hidden" aria-label="Reading level">
+      <section className="panel overflow-hidden" aria-label="Reading level" data-tour="level">
         <div className="flex flex-wrap items-start justify-between gap-5 p-6">
           <div className="min-w-0">
             <Link href={`${kidHref}#practice`} className="text-lg font-bold hover:underline">{k.full_name}</Link>
@@ -264,7 +264,7 @@ async function ParentHome({ slug, child }: { slug: string; child?: string }) {
       </section>
 
       <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
-        <Link href={`${kidHref}#attendance`} className="tile flex-row items-center gap-4">
+        <Link href={`${kidHref}#attendance`} className="tile flex-row items-center gap-4" data-tour="attendance">
           <Ring value={present} total={mine.length} size={64} label={`${present} of ${mine.length} classes attended this month`} />
           <span className="min-w-0">
             <span className="block font-semibold">Attendance</span>
@@ -272,7 +272,7 @@ async function ParentHome({ slug, child }: { slug: string; child?: string }) {
           </span>
         </Link>
 
-        <Link href={`${kidHref}#practice`} className="tile">
+        <Link href={`${kidHref}#practice`} className="tile" data-tour="record">
           <span className="flex items-center justify-between gap-3">
             <span className="tile-icon bg-brass-soft text-brass-ink">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

@@ -25,7 +25,10 @@ export function LoginForm({ next }: { next: string }) {
         <input className="input" type="email" name="email" autoComplete="email" required />
       </label>
       <label className="field">
-        <span>Password</span>
+        <span className="flex items-baseline justify-between">
+          Password
+          <Link href="/forgot" className="link text-xs">Forgot password?</Link>
+        </span>
         <input className="input" type="password" name="password" autoComplete="current-password" />
       </label>
       {state?.error ? <p className="notice notice-error" role="alert">{state.error}</p> : null}

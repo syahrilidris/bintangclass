@@ -17,6 +17,9 @@ export function AuthShell({ title, lead, children }: { title: string; lead?: str
           <h1 className="text-[1.75rem] font-bold">{title}</h1>
           {lead ? <p className="mt-2 text-muted">{lead}</p> : null}
           <div className="mt-8">{children}</div>
+          <p className="mt-8 text-sm text-muted">
+            New to Bintang Class? <Link href="/help" className="link">See how it works</Link>
+          </p>
         </div>
       </section>
       <aside className="relative hidden overflow-hidden bg-navy-900 lg:block" aria-hidden>
