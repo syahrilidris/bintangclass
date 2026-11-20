@@ -62,6 +62,11 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
     },
   })
   if (error) return { error: friendly(error.message) }
+  // An email that already has an account comes back "successful" with no identities and no email sent.
+  // Say so, instead of telling them to wait for an email that will never come.
+  if (data.user && (data.user.identities?.length ?? 0) === 0) {
+    return { error: 'There’s already an account with this email. Sign in instead, or tap “Forgot password?” on the sign-in page.' }
+  }
   if (data.session) redirect(next)
   return { sent: email }
 }
