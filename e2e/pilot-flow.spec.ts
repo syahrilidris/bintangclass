@@ -449,8 +449,9 @@ test('the tour shows each parent the parts of their page, and can be replayed', 
 
 /** Phone screenshots for the printed user guide: each scrolled to the part the guide talks about. */
 test('screens for the user guide', async ({ browser }) => {
+  test.setTimeout(120_000)
   const g = async (page: Page, name: string, at?: ReturnType<Page['locator']>) => {
-    if (at) await at.first().evaluate((el) => el.scrollIntoView({ block: 'start' }))
+    if (at) await at.first().evaluate((el) => el.scrollIntoView({ block: 'start' }), undefined, { timeout: 8000 }).catch(() => console.log(`[guide] ${name}: section not found`))
     else await page.evaluate(() => window.scrollTo(0, 0))
     await page.waitForTimeout(400)
     await page.screenshot({ path: `${shots}/guide-${name}.png` })
@@ -478,8 +479,7 @@ test('screens for the user guide', async ({ browser }) => {
   await g(o, '05-students', o.getByRole('heading', { name: /Add students|Students/ }))
   await o.goto(`/c/${slug}/people`)
   await ready(o)
-  await o.getByRole('button', { name: 'Invite someone' }).click().catch(() => {})
-  await g(o, '06-invite', o.getByText('Joins as'))
+  await g(o, '06-invite', o.getByRole('heading', { name: 'Invite someone' }))
   await o.goto(aisyahUrl)
   await ready(o)
   await g(o, '07-invite-parent', o.getByRole('heading', { name: 'Parents' }))

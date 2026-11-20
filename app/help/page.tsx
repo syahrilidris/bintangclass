@@ -26,7 +26,7 @@ const GUIDE: Section[] = [
       { heading: '1. Create your centre', steps: ['Tap **Create an account**, then fill in your name, email and a password.', 'Enter the centre name, town and WhatsApp number, then tap **Set up centre**.'] },
       { heading: '2. Add classes', steps: ['Tap **Classes**. Enter the **Class name** and **When it meets**.', 'Pick the **Teacher** if they’ve joined; otherwise do it after inviting them. Tap **Add class**.'] },
       { heading: '3. Add students', steps: ['Tap **Students**. Enter the child’s name, class, **Book** and **Page**.', 'Tap **Add and add another** to keep going.'] },
-      { heading: '4. Invite teachers', steps: ['Tap **People**, then **Invite someone**. Enter their email, choose **Teacher**.', 'Tap **Create invitation**, then **Send on WhatsApp**.', 'When they’ve joined, open the class and choose them as **Teacher**.'] },
+      { heading: '4. Invite teachers', steps: ['Tap **People**. Under **Invite someone**, enter their email and choose **Teacher**.', 'Tap **Create invitation**, then **Send on WhatsApp**.', 'When they’ve joined, open the class and choose them as **Teacher**.'] },
       { heading: '5. Invite parents', steps: ['Open the child from **Students**.', 'Under **Parents**, enter the parent’s email, tap **Create invitation**, and send it on WhatsApp.'], note: 'Inviting from the child’s page means each parent only ever sees their own child.' },
     ],
   },
