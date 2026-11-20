@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getOrigin, safeNext } from '@/lib/origin'
 
-export type AuthState = { error?: string; sent?: string } | undefined
+export type AuthState = { error?: string; sent?: string; exists?: string } | undefined
 
 function friendly(message: string): string {
   if (/invalid login credentials/i.test(message)) return 'That email and password don’t match. Check both, or use “Email me a sign-in link”.'
@@ -61,12 +61,11 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
       emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   })
+  if (error && /already registered/i.test(error.message)) return { exists: email }
   if (error) return { error: friendly(error.message) }
   // An email that already has an account comes back "successful" with no identities and no email sent.
   // Say so, instead of telling them to wait for an email that will never come.
-  if (data.user && (data.user.identities?.length ?? 0) === 0) {
-    return { error: 'There’s already an account with this email. Sign in instead, or tap “Forgot password?” on the sign-in page.' }
-  }
+  if (data.user && (data.user.identities?.length ?? 0) === 0) return { exists: email }
   if (data.session) redirect(next)
   return { sent: email }
 }

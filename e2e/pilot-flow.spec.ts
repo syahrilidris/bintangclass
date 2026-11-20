@@ -508,3 +508,14 @@ test('screens for the user guide', async ({ browser }) => {
   await g(p, '11b-record', p.getByRole('heading', { name: 'Practice at home' }))
   await p.context().close()
 })
+
+test('signing up again with an email that has an account says so', async ({ browser }) => {
+  const page = await newPerson(browser, true)
+  await page.goto('/signup')
+  await signUp(page, { name: 'Someone', email: owner.email })
+  const alert = page.getByRole('alert').filter({ hasText: 'This email already has an account.' })
+  await expect(alert).toBeVisible()
+  await expect(alert.getByRole('link', { name: 'Sign in' })).toBeVisible()
+  await shot(page, '16-signup-exists')
+  await page.context().close()
+})
