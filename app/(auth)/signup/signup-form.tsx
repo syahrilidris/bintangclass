@@ -34,6 +34,17 @@ export function SignupForm({ next, email }: { next: string; email?: string }) {
         <small>At least 8 characters.</small>
       </label>
       {state?.error ? <p className="notice notice-error" role="alert">{state.error}</p> : null}
+      {state?.exists ? (
+        <div className="notice notice-warn grid gap-3" role="alert">
+          <p>
+            <strong>This email already has an account.</strong> Sign in with it instead. No new email was sent.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/login?next=${encodeURIComponent(next)}`} className="btn btn-primary min-h-10">Sign in</Link>
+            <Link href="/forgot" className="btn btn-quiet min-h-10">Forgot password?</Link>
+          </div>
+        </div>
+      ) : null}
       <Submit pending="Creating account…">Create account</Submit>
       <p className="text-sm text-muted">
         Already have an account?{' '}

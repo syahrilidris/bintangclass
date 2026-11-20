@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Tour, TourButton } from '@/components/tour'
 import { Suspense } from 'react'
 import { RouteSkeleton } from '@/components/route-skeleton'
 import { PullToRefresh } from '@/components/pull-refresh'
@@ -59,16 +60,21 @@ export default async function CentreLayout({ children, params }: { children: Rea
           <p className="text-xs text-white/55">{ROLE_LABEL[role]}{centre.city ? `, ${centre.city}` : ''}</p>
           {manyCentres ? <Link href="/app" className="mt-2 inline-block text-xs font-semibold text-teal-100 hover:underline">Switch centre</Link> : null}
         </div>
-        <nav className="mt-6" aria-label="Centre">
+        <nav className="mt-6" aria-label="Centre" data-tour="nav">
           <SideNav items={items} root={root} />
         </nav>
-        <div className="mt-auto grid gap-4 border-t border-white/10 px-2 pt-4">
+        <div className="mt-auto grid gap-4 border-t border-white/10 px-2 pt-4" data-tour="account">
           <ThemeSwitch tone="onNavy" />
           <div>
           <p className="truncate text-sm text-white/80">{myName || user.email}</p>
           <div className="mt-1 flex gap-4">
             <SignOutButton className="text-xs text-white/50 hover:text-white" label="Sign out" />
             <InstallLink className="text-xs text-white/50 hover:text-white" />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <TourButton className="text-xs font-semibold text-teal-100 hover:underline" />
+            <Link href="/help" className="text-xs text-white/50 hover:text-white">User guide</Link>
+            <Link href="/app/password" className="text-xs text-white/50 hover:text-white">Change password</Link>
           </div>
           </div>
         </div>
@@ -90,7 +96,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
             </Link>
             <div className="flex shrink-0 items-center gap-2">
               <ThemeSwitch tone="onNavy" compact />
-              <details className="relative">
+              <details className="relative" data-tour="account">
                 <summary
                   className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-teal-600 text-xs font-bold [&::-webkit-details-marker]:hidden"
                   aria-label="Account"
@@ -99,6 +105,9 @@ export default async function CentreLayout({ children, params }: { children: Rea
                 </summary>
                 <div className="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-line bg-raised p-2 text-ink shadow-[var(--shadow-float)]">
                   <p className="truncate px-3 py-2 text-sm text-muted">{myName || user.email}</p>
+                  <TourButton className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-teal-700 hover:bg-paper" />
+                  <Link href="/help" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">User guide</Link>
+                  <Link href="/app/password" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Change password</Link>
                   {role === 'owner' ? <Link href={`${root}/settings`} className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Centre settings</Link> : null}
                   {manyCentres ? <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Switch centre</Link> : null}
                   <InstallLink className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-paper" />
@@ -127,6 +136,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
       </div>
       <TabBar items={items} root={root} />
       <PullToRefresh />
+      <Tour role={role} />
     </div>
   )
 }

@@ -58,7 +58,7 @@ export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
   items = items.filter((it) => it.icon !== 'settings')
   if (items.length < 2) return null
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+    <nav data-tour="nav" className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
       <ul className="mx-auto flex max-w-md justify-around px-2">
         {items.map((it) => {
           const active = isActive(path, it.href, root)
