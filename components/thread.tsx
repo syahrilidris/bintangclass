@@ -144,7 +144,7 @@ export function Thread({
             send()
           }}
         >
-          <label className="sr-only" htmlFor="message">Message</label>
+          <label className="sr-only" htmlFor="message">Write a message</label>
           <textarea
             id="message"
             rows={1}
