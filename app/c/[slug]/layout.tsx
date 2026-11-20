@@ -63,20 +63,26 @@ export default async function CentreLayout({ children, params }: { children: Rea
         <nav className="mt-6" aria-label="Centre" data-tour="nav">
           <SideNav items={items} root={root} />
         </nav>
-        <div className="mt-auto grid gap-4 border-t border-white/10 px-2 pt-4" data-tour="account">
-          <ThemeSwitch tone="onNavy" />
-          <div>
-          <p className="truncate text-sm text-white/80">{myName || user.email}</p>
-          <div className="mt-1 flex gap-4">
-            <SignOutButton className="text-xs text-white/50 hover:text-white" label="Sign out" />
-            <InstallLink className="text-xs text-white/50 hover:text-white" />
-          </div>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-            <TourButton className="text-xs font-semibold text-teal-100 hover:underline" />
-            <Link href="/help" className="text-xs text-white/50 hover:text-white">User guide</Link>
-            <Link href="/app/password" className="text-xs text-white/50 hover:text-white">Change password</Link>
-          </div>
-          </div>
+        <div className="mt-auto grid gap-3 border-t border-white/10 pt-4" data-tour="account">
+          <div className="px-2"><ThemeSwitch tone="onNavy" /></div>
+          <details className="group relative">
+            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/5 [&::-webkit-details-marker]:hidden">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-bold">{initials(myName || user.email || '?')}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-white">{myName || user.email}</span>
+                <span className="block text-xs text-white/55">{ROLE_LABEL[role]}</span>
+              </span>
+              <svg className="shrink-0 text-white/50 transition-transform group-open:rotate-180" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="m6 15 6-6 6 6" /></svg>
+            </summary>
+            <div className="absolute bottom-full left-0 right-0 z-30 mb-2 grid rounded-xl border border-line bg-raised p-1.5 text-ink shadow-[var(--shadow-float)]">
+              <TourButton className="rounded-lg px-3 py-2 text-left text-sm font-semibold text-teal-700 hover:bg-paper" />
+              <Link href="/help" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">User guide</Link>
+              <Link href="/app/password" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Change password</Link>
+              <InstallLink className="rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-paper" />
+              <div className="my-1 border-t border-line" />
+              <SignOutButton className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger-soft" label="Sign out" />
+            </div>
+          </details>
         </div>
       </aside>
       </div>
