@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 // or disconnect. The code or key in the request is the only permission; see the family_bridge migration.
 export const runtime = 'nodejs'
 
-const ALLOWED = ['https://app.bintangkids.com', 'https://bintangkids.vercel.app', 'http://localhost:3000', 'http://localhost:3200']
+const ALLOWED = ['https://app.bintangkids.com', 'https://bintangkids.com', 'https://www.bintangkids.com', 'https://bintangkids.vercel.app', 'http://localhost:3000', 'http://localhost:3200']
 
 function cors(req: Request) {
   const origin = req.headers.get('origin') ?? ''
