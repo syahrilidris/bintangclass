@@ -537,6 +537,13 @@ test('the bell shows new recordings to the teacher and replies to the parent', a
   await t.reload()
   await ready(t)
   await expect(t.getByRole('link', { name: 'Notifications', exact: true })).toBeVisible() // all seen now
+  // set new practice now that the parent has joined
+  await t.goto(`/c/${slug}/classes`)
+  await t.getByRole('link', { name: /Iqra Pagi/ }).first().click()
+  await ready(t)
+  await t.getByLabel('What to practise at home').fill('Iqra 4, pages 25–26')
+  await t.getByRole('button', { name: 'Set practice' }).click()
+  await expect(t.getByText('Iqra 4, pages 25–26').first()).toBeVisible()
   await t.context().close()
 
   const p = await newPerson(browser, true)
@@ -544,7 +551,7 @@ test('the bell shows new recordings to the teacher and replies to the parent', a
   await p.getByRole('link', { name: /^Notifications, \d+ new$/ }).click()
   await expect(p.getByText(/replied to Aisyah’s recording/).first()).toBeVisible()
   await expect(p.getByText(/New practice for Aisyah/).first()).toBeVisible()
-  await expect(p.getByText(/Aisyah is reading Iqra 4, page 23/).first()).toBeVisible()
+  await expect(p.getByText(/Iqra 4, pages 25–26/).first()).toBeVisible()
   await expect(p.getByText(/New recording from/)).toHaveCount(0) // parents don't get teachers' notifications
   await shot(p, '18-parent-notifications')
   await p.getByText(/replied to Aisyah’s recording/).first().click()
