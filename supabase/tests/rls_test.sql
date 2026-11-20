@@ -22,6 +22,7 @@ declare
   s1 uuid; s2 uuid; s3 uuid; sb uuid;  -- students (s1, s2 in c1; s3 in c2)
   inv_token text;
   hw uuid;
+  bcode text; btoken text; bfeed jsonb;
   n int;
   total int := 0;
   failed text[] := '{}';
@@ -191,6 +192,33 @@ begin
   perform pg_temp.sign_in(p1);
   total := total + 1; if pg_temp.cnt(format('select * from public.notifications where kind = %L', 'message')) < 1 then failed := array_append(failed, 'parent not notified of reply message'::text); end if;
   total := total + 1; if pg_temp.run(format('delete from public.messages where body = %L', 'Waalaikumsalam')) > 0 then failed := array_append(failed, 'parent deleted teacher''s message'::text); end if;
+
+  -- ===== family app bridge: one-time code → read-only key for ONE child =====
+  perform pg_temp.sign_in(p1);
+  bcode := (public.bridge_new_code(s1))->>'code';
+  total := total + 1; if bcode is null or length(bcode) <> 9 then failed := array_append(failed, 'parent could not make a pairing code'::text); end if;
+  total := total + 1; if pg_temp.run(format('select public.bridge_new_code(%L)', s2)) <> -1 then failed := array_append(failed, 'parent made a code for another child'::text); end if;
+  total := total + 1; if pg_temp.cnt('select * from public.bridge_codes') > 0 then failed := array_append(failed, 'pairing codes are readable'::text); end if;
+  perform pg_temp.sign_in(t1);
+  total := total + 1; if pg_temp.run(format('select public.bridge_new_code(%L)', s1)) <> -1 then failed := array_append(failed, 'teacher made a pairing code'::text); end if;
+  perform pg_temp.sign_in(null);  -- the family app has no Bintang Class sign-in
+  total := total + 1; if pg_temp.run(format('select public.bridge_claim(%L)', 'AAAA-AAAA')) <> -1 then failed := array_append(failed, 'wrong pairing code accepted'::text); end if;
+  btoken := (public.bridge_claim(lower(bcode)))->>'token';
+  total := total + 1; if btoken is null then failed := array_append(failed, 'pairing code could not be claimed'::text); end if;
+  total := total + 1; if pg_temp.run(format('select public.bridge_claim(%L)', bcode)) <> -1 then failed := array_append(failed, 'pairing code worked twice'::text); end if;
+  bfeed := public.bridge_feed(btoken, null);
+  total := total + 1; if bfeed->>'child' is null or bfeed ? 'student_id' or bfeed::text like '%' || s2::text || '%' then failed := array_append(failed, 'feed shows the wrong child or ids'::text); end if;
+  total := total + 1; if jsonb_array_length(bfeed->'attendance') < 1 then failed := array_append(failed, 'feed misses attendance'::text); end if;
+  total := total + 1; if pg_temp.run(format('select public.bridge_feed(%L, null)', 'not-a-key')) <> -1 then failed := array_append(failed, 'feed opened with a made-up key'::text); end if;
+  total := total + 1; if pg_temp.cnt('select id from public.bridge_links') > 0 then failed := array_append(failed, 'anon reads bridge links'::text); end if;
+  perform pg_temp.sign_in(p2);
+  total := total + 1; if pg_temp.cnt('select id from public.bridge_links') <> 0 then failed := array_append(failed, 'other parent sees bridge links'::text); end if;
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.cnt('select id, label from public.bridge_links') <> 1 then failed := array_append(failed, 'parent cannot see own child''s link'::text); end if;
+  total := total + 1; if pg_temp.run('select token_hash from public.bridge_links') <> -1 then failed := array_append(failed, 'key hashes are readable'::text); end if;
+  perform pg_temp.run(format('select public.bridge_revoke(id) from public.bridge_links where student_id = %L', s1));
+  perform pg_temp.sign_in(null);
+  total := total + 1; if pg_temp.run(format('select public.bridge_feed(%L, null)', btoken)) <> -1 then failed := array_append(failed, 'feed still works after disconnect'::text); end if;
 
   -- progress moved the student's book/page
   perform pg_temp.sign_in(p1);

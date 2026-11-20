@@ -81,6 +81,12 @@ export type Database = {
           { foreignKeyName: 'invites_student_fk'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
         ]
       }
+      bridge_links: {
+        Row: { centre_id: string; created_at: string; created_by: string; id: string; label: string; last_used_at: string | null; revoked_at: string | null; student_id: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       messages: {
         Row: { body: string; centre_id: string; created_at: string; id: string; sender_id: string; sender_name: string | null; sender_role: string | null; student_id: string }
         Insert: { body: string; centre_id: string; student_id: string }
@@ -137,6 +143,11 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      bridge_new_code: { Args: { p_student: string }; Returns: { code: string; expires_at: string } }
+      bridge_claim: { Args: { p_code: string; p_label: string | null }; Returns: Record<string, unknown> }
+      bridge_feed: { Args: { p_token: string; p_since: string | null }; Returns: Record<string, unknown> }
+      bridge_disconnect: { Args: { p_token: string }; Returns: undefined }
+      bridge_revoke: { Args: { p_link: string }; Returns: undefined }
       save_push_subscription: { Args: { p_endpoint: string; p_p256dh: string; p_auth: string }; Returns: undefined }
       remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined }
       push_gone: { Args: { p_secret: string; p_endpoints: string[] }; Returns: undefined }

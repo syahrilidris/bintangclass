@@ -13,6 +13,7 @@ import { removeSubmission } from '../../practice/actions'
 import { playbackUrls } from '@/lib/recordings'
 import { greetingName } from '@/lib/centre'
 import { AttendanceCalendar, isMonth } from '@/components/attendance-calendar'
+import { FamilyLink } from '@/components/family-link'
 
 export const metadata = { title: 'Student' }
 
@@ -67,6 +68,9 @@ export default async function StudentPage({
 
   const canRecord = canWrite && (isManager || s.classes?.teacher_id === user.id)
   const inConversation = isGuardian || isManager || s.classes?.teacher_id === user.id
+  const { data: familyLinks } = isGuardian || isManager
+    ? await supabase.from('bridge_links').select('id, label, created_at, last_used_at').eq('student_id', id).is('revoked_at', null).order('created_at')
+    : { data: null }
   const { data: lastMsg } = inConversation
     ? await supabase.from('messages').select('body, sender_id, sender_name, created_at').eq('student_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle()
     : { data: null }
@@ -170,6 +174,10 @@ export default async function StudentPage({
               <AttendanceCalendar month={month} today={today} days={att ?? []} hrefFor={(mo) => `${root}/students/${s.id}?month=${mo}#attendance`} />
             </div>
           </section>
+
+          {isGuardian || (isManager && (familyLinks ?? []).length) ? (
+            <FamilyLink studentId={s.id} firstName={s.full_name.split(' ')[0]} links={familyLinks ?? []} canConnect={isGuardian && canWrite} />
+          ) : null}
 
           {isStaff ? (
             <section>
