@@ -9,7 +9,7 @@ and a platform admin with a light CRM.
 ## Deploys
 
 Vercel project `bintangclass` is connected to this repo: every push to `main` deploys production
-(https://bintangclass.vercel.app) and every other branch or pull request gets its own preview link.
+(https://class.bintangkids.com) and every other branch or pull request gets its own preview link.
 
 ## Run it
 

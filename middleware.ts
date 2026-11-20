@@ -3,7 +3,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Refreshes the Supabase session cookie on every request and keeps signed-out visitors
 // out of the app. Data access is still enforced by Row Level Security, not here.
+// The app's home is class.bintangkids.com. The old Vercel address forwards page visits there,
+// but still serves the service worker, manifest and /api so installed phones and push keep working.
+const HOME = 'class.bintangkids.com'
+const OLD = 'bintangclass.vercel.app'
+
 export async function middleware(request: NextRequest) {
+  if (request.headers.get('host') === OLD && !request.nextUrl.pathname.startsWith('/api/')) {
+    const url = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${HOME}`)
+    return NextResponse.redirect(url, 308)
+  }
   let response = NextResponse.next({ request })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

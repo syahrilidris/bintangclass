@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   const priv = process.env.VAPID_PRIVATE_KEY
   if (!pub || !priv) return new Response('Push not configured', { status: 503 })
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'https://bintangclass.vercel.app', pub, priv)
+  webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'https://class.bintangkids.com', pub, priv)
 
   const { title, body, url, tag, subs } = (await req.json()) as { title: string; body?: string; url: string; tag?: string; subs: Sub[] }
   const payload = JSON.stringify({ title, body, url, tag })
