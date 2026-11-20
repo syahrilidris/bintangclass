@@ -24,6 +24,8 @@ function Icon({ name }: { name: NavItem['icon'] }) {
 }
 
 function isActive(path: string, href: string, root: string) {
+  // A child's conversation (/students/<id>/messages) belongs to the Messages tab.
+  if (path.endsWith('/messages')) return href.endsWith('/messages')
   return href === root ? path === root : path === href || path.startsWith(href + '/')
 }
 
