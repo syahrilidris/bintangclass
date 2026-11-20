@@ -81,6 +81,12 @@ export type Database = {
           { foreignKeyName: 'invites_student_fk'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
         ]
       }
+      notifications: {
+        Row: { body: string | null; centre_id: string; created_at: string; id: string; kind: string; read_at: string | null; title: string; url: string; user_id: string }
+        Insert: never
+        Update: { read_at?: string | null }
+        Relationships: []
+      }
       memberships: {
         Row: { billing_contact: boolean; centre_id: string; created_at: string; display_name: string | null; id: string; main_contact: boolean; role: string; user_id: string }
         Insert: { billing_contact?: boolean; centre_id: string; display_name?: string | null; main_contact?: boolean; role: string; user_id: string }
@@ -123,6 +129,9 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      save_push_subscription: { Args: { p_endpoint: string; p_p256dh: string; p_auth: string }; Returns: undefined }
+      remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined }
+      push_gone: { Args: { p_secret: string; p_endpoints: string[] }; Returns: undefined }
       accept_invite: { Args: { p_display_name?: string; p_token: string }; Returns: string }
       create_centre: { Args: { p_city?: string; p_display_name?: string; p_name: string; p_phone?: string; p_slug: string }; Returns: string }
       invite_info: { Args: { p_token: string }; Returns: { centre_name: string; email: string; role: string }[] }

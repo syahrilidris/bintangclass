@@ -6,7 +6,7 @@
 //   so nothing private stays on a shared family phone.
 // - The app's own code, fonts and icons are cached so it can start offline.
 
-const VERSION = 'v3'
+const VERSION = 'v4'
 const STATIC = `bc-static-${VERSION}`
 const PAGES = 'bc-pages'
 const KEEP_PAGES = /^\/(app$|app\/|c\/)/
@@ -105,4 +105,39 @@ self.addEventListener('message', (event) => {
       }),
     )
   }
+})
+
+// Phone notifications: a recording to listen to, a teacher's reply, new practice, new progress.
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { title: 'Bintang Class', body: event.data && event.data.text() }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Bintang Class', {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/badge-96.png',
+      tag: data.tag ? `${data.tag}-${data.url || ''}` : undefined,
+      data: { url: data.url || '/app' },
+    }),
+  )
+})
+
+// Tapping a notification opens the page it's about, reusing an open window if there is one.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const target = new URL(event.notification.data?.url || '/app', self.location.origin).href
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if (new URL(w.url).origin === self.location.origin && 'focus' in w) {
+          return w.focus().then(() => ('navigate' in w ? w.navigate(target) : null))
+        }
+      }
+      return self.clients.openWindow(target)
+    }),
+  )
 })

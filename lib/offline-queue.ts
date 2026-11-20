@@ -184,6 +184,11 @@ async function doFlush(): Promise<{ sent: number; failed: string[] }> {
 
 /** Wipe everything this app stored on the phone: queued work and saved pages. */
 export async function wipeDevice() {
+  // Stop this phone getting the signed-out person's notifications.
+  try {
+    const { turnOff } = await import('@/components/push')
+    await turnOff()
+  } catch {}
   try {
     await new Promise<void>((resolve) => {
       const req = indexedDB.deleteDatabase(DB)
