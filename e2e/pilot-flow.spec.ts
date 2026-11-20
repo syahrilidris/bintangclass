@@ -573,7 +573,7 @@ test('parent and teacher message each other about the child', async ({ browser }
 
   const t = await newPerson(browser, true)
   await signIn(t, teacher.email)
-  await t.getByRole('link', { name: /^Messages/ }).first().click()
+  await t.getByRole('navigation').getByRole('link', { name: /Messages/ }).first().click()
   const thread = t.getByRole('list', { name: 'Conversations' }).getByRole('link', { name: /Aisyah binti Rahman/ })
   await expect(thread).toContainText('Aisyah demam hari ini')
   await thread.click()
