@@ -302,6 +302,15 @@ async function ParentHome({ slug, child }: { slug: string; child?: string }) {
       </div>
 
       <nav aria-label="More for this child" className="grid grid-cols-2 gap-3">
+        <Link href={`${kidHref}/messages`} className="tile col-span-2 flex-row items-center gap-4">
+          <span className="tile-icon shrink-0 bg-teal-50 text-teal-700">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 5.5h16v10.5H9.5L5 19.5v-3.5H4z" /></svg>
+          </span>
+          <span className="min-w-0">
+            <span className="block font-semibold">Message the teacher</span>
+            <span className="block text-xs text-muted">About {k.full_name.split(' ')[0]}</span>
+          </span>
+        </Link>
         <Tile href={`${kidHref}#progress`} icon="book" label="Reading history" hint="Every page and note" tone="navy" />
         <Tile href={`${kidHref}#attendance`} icon="attendance" label="Attendance calendar" hint="Month by month" />
       </nav>

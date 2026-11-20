@@ -9,6 +9,7 @@ const KIND: Record<string, { label: string; tone: string; icon: React.ReactNode 
   recording: { label: 'Recording', tone: 'bg-brass-soft text-brass-ink', icon: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" /></> },
   reply: { label: 'Reply', tone: 'bg-teal-50 text-teal-700', icon: <path d="M4 5.5h16v10H9l-5 4z" /> },
   practice: { label: 'Practice', tone: 'bg-solid/10 text-strong dark:bg-white/10', icon: <><path d="M8 4.5h8M6.5 6.5h11v13h-11z" /><path d="m9.5 13 2 2 3.5-4" /></> },
+  message: { label: 'Message', tone: 'bg-teal-50 text-teal-700', icon: <path d="M4 5.5h16v10.5H9.5L5 19.5v-3.5H4z" /> },
   progress: { label: 'Progress', tone: 'bg-teal-50 text-teal-700', icon: <path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.4 7.2 18l.9-5.4L4.2 8.7l5.4-.8z" /> },
 }
 

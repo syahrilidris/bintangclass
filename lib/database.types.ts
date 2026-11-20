@@ -81,6 +81,14 @@ export type Database = {
           { foreignKeyName: 'invites_student_fk'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
         ]
       }
+      messages: {
+        Row: { body: string; centre_id: string; created_at: string; id: string; sender_id: string; sender_name: string | null; sender_role: string | null; student_id: string }
+        Insert: { body: string; centre_id: string; student_id: string }
+        Update: never
+        Relationships: [
+          { foreignKeyName: 'messages_student_id_fkey'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'students'; referencedColumns: ['id'] },
+        ]
+      }
       notifications: {
         Row: { body: string | null; centre_id: string; created_at: string; id: string; kind: string; read_at: string | null; title: string; url: string; user_id: string }
         Insert: never

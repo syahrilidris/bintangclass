@@ -23,13 +23,15 @@ export default async function CentreLayout({ children, params }: { children: Rea
   const { centre, role, myName, user, isManager, isStaff, supabase } = await getCentre(slug)
   const root = `/c/${slug}`
 
-  const [{ count: waiting }, { count }, { count: unread }] = await Promise.all([
+  const [{ count: waiting }, { count }, { count: unread }, { count: unreadMessages }] = await Promise.all([
     isStaff
       ? supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('reviewed_at', null)
       : Promise.resolve({ count: 0 }),
     supabase.from('memberships').select('centre_id', { count: 'exact', head: true }).eq('user_id', user.id),
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).is('read_at', null),
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('centre_id', centre.id).eq('kind', 'message').is('read_at', null),
   ])
+  const messages: NavItem = { href: `${root}/messages`, label: 'Messages', icon: 'messages', badge: unreadMessages ?? 0 }
   const practice: NavItem = { href: `${root}/practice`, label: 'Practice', icon: 'practice', badge: waiting ?? 0 }
 
   const items: NavItem[] = isManager
@@ -38,6 +40,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
         { href: `${root}/classes`, label: 'Classes', icon: 'classes' },
         { href: `${root}/students`, label: 'Students', icon: 'students' },
         practice,
+        messages,
         { href: `${root}/people`, label: 'People', icon: 'people' },
         ...(role === 'owner' ? [{ href: `${root}/settings`, label: 'Settings', icon: 'settings' } as NavItem] : []),
       ]
@@ -47,8 +50,9 @@ export default async function CentreLayout({ children, params }: { children: Rea
           { href: `${root}/classes`, label: 'My classes', icon: 'classes' },
           { href: `${root}/students`, label: 'My students', icon: 'students' },
           practice,
+          messages,
         ]
-      : [{ href: root, label: 'My children', icon: 'students' }]
+      : [{ href: root, label: 'My children', icon: 'students' }, messages]
 
   const manyCentres = (count ?? 0) > 1
 
@@ -120,6 +124,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
                   <TourButton className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-teal-700 hover:bg-paper" />
                   <Link href="/help" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">User guide</Link>
                   <Link href="/app/password" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Change password</Link>
+                  {isManager ? <Link href={`${root}/people`} className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">People</Link> : null}
                   {role === 'owner' ? <Link href={`${root}/settings`} className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Centre settings</Link> : null}
                   {manyCentres ? <Link href="/app" className="block rounded-lg px-3 py-2 text-sm font-medium hover:bg-paper">Switch centre</Link> : null}
                   <InstallLink className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-paper" />
