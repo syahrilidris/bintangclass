@@ -171,6 +171,27 @@ begin
   total := total + 1; if pg_temp.run(format('select public.push_gone(%L, array[%L])', 'guess', 'https://x')) <> -1 then failed := array_append(failed, 'push_gone accepted a wrong secret'::text); end if;
   perform pg_temp.sign_in(t1);
 
+  -- ===== messages: only the child's parents, the class teacher, owner and admins =====
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.run(format('insert into public.messages (centre_id, student_id, body) values (%L, %L, %L)', ca, s1, 'Assalamualaikum ustaz')) <> 1 then failed := array_append(failed, 'parent cannot message about own child'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.messages (centre_id, student_id, body) values (%L, %L, %L)', ca, s2, 'Not my child')) > 0 then failed := array_append(failed, 'parent messaged about another child'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.messages (centre_id, student_id, sender_id, body) values (%L, %L, %L, %L)', ca, s1, t1, 'Pretending')) > 0 then failed := array_append(failed, 'parent sent as the teacher'::text); end if;
+  perform pg_temp.sign_in(t1);
+  total := total + 1; if pg_temp.cnt(format('select * from public.messages where student_id = %L', s1)) <> 1 then failed := array_append(failed, 'class teacher cannot read child''s messages'::text); end if;
+  total := total + 1; if pg_temp.cnt(format('select * from public.notifications where kind = %L', 'message')) < 1 then failed := array_append(failed, 'teacher not notified of message'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.messages (centre_id, student_id, body) values (%L, %L, %L)', ca, s1, 'Waalaikumsalam')) <> 1 then failed := array_append(failed, 'teacher cannot reply'::text); end if;
+  total := total + 1; if pg_temp.run(format('update public.messages set body = %L', 'Edited')) > 0 then failed := array_append(failed, 'message was edited'::text); end if;
+  total := total + 1; if pg_temp.run(format('insert into public.messages (centre_id, student_id, body) values (%L, %L, %L)', ca, s3, 'Other class')) > 0 then failed := array_append(failed, 'teacher messaged about a child in another class'::text); end if;
+  perform pg_temp.sign_in(p2);
+  total := total + 1; if pg_temp.cnt('select * from public.messages') <> 0 then failed := array_append(failed, 'other parent reads messages'::text); end if;
+  perform pg_temp.sign_in(a1);
+  total := total + 1; if pg_temp.cnt(format('select * from public.messages where student_id = %L', s1)) <> 2 then failed := array_append(failed, 'admin cannot read conversation'::text); end if;
+  perform pg_temp.sign_in(o2);
+  total := total + 1; if pg_temp.cnt('select * from public.messages') <> 0 then failed := array_append(failed, 'owner B reads messages of A'::text); end if;
+  perform pg_temp.sign_in(p1);
+  total := total + 1; if pg_temp.cnt(format('select * from public.notifications where kind = %L', 'message')) < 1 then failed := array_append(failed, 'parent not notified of reply message'::text); end if;
+  total := total + 1; if pg_temp.run(format('delete from public.messages where body = %L', 'Waalaikumsalam')) > 0 then failed := array_append(failed, 'parent deleted teacher''s message'::text); end if;
+
   -- progress moved the student's book/page
   perform pg_temp.sign_in(p1);
   total := total + 1; if pg_temp.cnt(format('select * from public.students where id = %L and page = 5', s1)) <> 1 then failed := array_append(failed, 'progress did not update student page'::text); end if;

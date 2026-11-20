@@ -3,7 +3,7 @@
 import Link, { useLinkStatus } from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export type NavItem = { href: string; label: string; icon: 'home' | 'classes' | 'students' | 'people' | 'settings' | 'practice'; badge?: number }
+export type NavItem = { href: string; label: string; icon: 'home' | 'classes' | 'students' | 'people' | 'settings' | 'practice' | 'messages'; badge?: number }
 
 const ICONS: Record<NavItem['icon'], React.ReactNode> = {
   home: <path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" />,
@@ -11,6 +11,7 @@ const ICONS: Record<NavItem['icon'], React.ReactNode> = {
   students: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></>,
   people: <><circle cx="9" cy="9" r="3" /><circle cx="17" cy="10" r="2.4" /><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6M15 15c2.4-.3 4.6.9 5.3 3.6" /></>,
   practice: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" /></>,
+  messages: <path d="M4 5.5h16v10.5H9.5L5 19.5v-3.5H4z" />,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" /></>,
 }
 
@@ -23,6 +24,8 @@ function Icon({ name }: { name: NavItem['icon'] }) {
 }
 
 function isActive(path: string, href: string, root: string) {
+  // A child's conversation (/students/<id>/messages) belongs to the Messages tab.
+  if (path.endsWith('/messages')) return href.endsWith('/messages')
   return href === root ? path === root : path === href || path.startsWith(href + '/')
 }
 
@@ -55,7 +58,8 @@ export function SideNav({ items, root }: { items: NavItem[]; root: string }) {
 
 export function TabBar({ items, root }: { items: NavItem[]; root: string }) {
   const path = usePathname()
-  items = items.filter((it) => it.icon !== 'settings')
+  // Phones have room for five tabs: Settings and People live in the account menu there.
+  items = items.filter((it) => it.icon !== 'settings' && (items.length <= 5 || it.icon !== 'people'))
   if (items.length < 2) return null
   return (
     <nav data-tour="nav" className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">

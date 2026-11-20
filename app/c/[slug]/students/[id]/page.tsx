@@ -66,6 +66,10 @@ export default async function StudentPage({
   const isGuardian = !isStaff
 
   const canRecord = canWrite && (isManager || s.classes?.teacher_id === user.id)
+  const inConversation = isGuardian || isManager || s.classes?.teacher_id === user.id
+  const { data: lastMsg } = inConversation
+    ? await supabase.from('messages').select('body, sender_id, sender_name, created_at').eq('student_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+    : { data: null }
 
   return (
     <div className="grid gap-10">
@@ -84,6 +88,21 @@ export default async function StudentPage({
           <div className="mt-4"><StarTrack book={s.book} page={s.page} size="lg" /></div>
         </div>
       </header>
+
+      {inConversation ? (
+        <Link href={`${root}/students/${s.id}/messages`} className="tile -mt-4 flex-row items-center gap-4" aria-label={`Messages about ${s.full_name}`}>
+          <span className="tile-icon shrink-0 bg-teal-50 text-teal-700">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 5.5h16v10.5H9.5L5 19.5v-3.5H4z" /></svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">{isGuardian ? 'Message the teacher' : 'Messages with parents'}</span>
+            <span className="block truncate text-sm text-muted">
+              {lastMsg ? `${lastMsg.sender_id === user.id ? 'You' : (lastMsg.sender_name ?? 'Someone')}: ${lastMsg.body}` : 'No messages yet'}
+            </span>
+          </span>
+          <svg className="shrink-0 text-faint" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="m9 5 7 7-7 7" /></svg>
+        </Link>
+      ) : null}
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid content-start gap-10">
