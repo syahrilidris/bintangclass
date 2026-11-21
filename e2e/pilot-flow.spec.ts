@@ -589,5 +589,23 @@ test('parent and teacher message each other about the child', async ({ browser }
   await ready(p)
   await expect(p.getByText('Semoga cepat sembuh', { exact: false })).toBeVisible()
   await expect(p.getByText(/Ustaz Hakim Zainal/).first()).toBeVisible()
+
+  // A long conversation opens at the newest message, fully visible above the message box
+  const box = p.getByLabel('Write a message')
+  for (let i = 1; i <= 12; i++) {
+    await box.fill(`Nota ${i}: bacaan hari ini`)
+    await p.getByRole('button', { name: 'Send' }).click()
+    await expect(p.getByText(`Nota ${i}: bacaan hari ini`)).toBeVisible()
+  }
+  const fullyAboveTheBox = async (text: string) => {
+    const msg = await p.getByText(text).boundingBox()
+    const form = await p.locator('form').filter({ has: box }).boundingBox()
+    return !!msg && !!form && msg.y >= 0 && msg.y + msg.height <= form.y + 1
+  }
+  await expect.poll(() => fullyAboveTheBox('Nota 12: bacaan hari ini')).toBe(true)
+  await p.reload()
+  await ready(p)
+  await expect.poll(() => fullyAboveTheBox('Nota 12: bacaan hari ini'), { timeout: 5000 }).toBe(true)
+  await shot(p, '21-chat-opens-at-latest')
   await p.context().close()
 })
