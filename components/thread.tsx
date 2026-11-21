@@ -54,9 +54,50 @@ export function Thread({
     }
   }, [studentId, supabase])
 
+  // Keep the newest message in view, above the message box and the tab bar.
+  // Scrolls the whole page to its bottom (the box sits under the last message there), again
+  // once the page has finished easing in, and whenever the phone keyboard opens or closes.
+  const [newBelow, setNewBelow] = useState(false)
+  const nearBottom = () => window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 160
+  const toBottom = (smooth = false) => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: smooth ? 'smooth' : 'auto' })
+    setNewBelow(false)
+  }
+  const first = useRef(true)
+  const lastCount = useRef(msgs.length)
   useLayoutEffect(() => {
-    end.current?.scrollIntoView({ block: 'end' })
+    const grew = msgs.length > lastCount.current
+    const mineLast = msgs[msgs.length - 1]?.sender_id === me
+    lastCount.current = msgs.length
+    if (first.current) {
+      first.current = false
+      toBottom()
+      const timers = [80, 300, 700].map((ms) => window.setTimeout(() => toBottom(), ms))
+      return () => timers.forEach(clearTimeout)
+    }
+    if (!grew) return
+    if (mineLast || nearBottom()) requestAnimationFrame(() => toBottom(true))
+    else setNewBelow(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs.length])
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    let was = nearBottom()
+    const before = () => { was = nearBottom() }
+    const after = () => { if (was) toBottom() }
+    window.addEventListener('scroll', before, { passive: true })
+    vv.addEventListener('resize', after)
+    const onScroll = () => { if (nearBottom()) setNewBelow(false) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', before)
+      window.removeEventListener('scroll', onScroll)
+      vv.removeEventListener('resize', after)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function send() {
     const body = text.trim()
@@ -134,7 +175,17 @@ export function Thread({
           )
         })}
       </ol>
-      <div ref={end} />
+      <div ref={end} className="h-2" aria-hidden />
+
+      {newBelow ? (
+        <button
+          type="button"
+          onClick={() => toBottom(true)}
+          className="sticky bottom-[calc(9rem+env(safe-area-inset-bottom))] z-10 mx-auto mt-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-float)] lg:bottom-24"
+        >
+          New message ↓
+        </button>
+      ) : null}
 
       {canSend ? (
         <form
@@ -151,6 +202,7 @@ export function Thread({
             value={text}
             maxLength={2000}
             onChange={(e) => setText(e.target.value)}
+            onFocus={() => window.setTimeout(() => toBottom(true), 250)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) {
                 e.preventDefault()
